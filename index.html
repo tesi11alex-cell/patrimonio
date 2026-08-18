@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="10.0">
+<meta name="app-version" content="11.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -2157,6 +2157,84 @@ th,td,
   }
 }
 
+
+/* V11 · descrizioni lunghe nei conteggi personali */
+.personal-textarea{
+  width:100%;
+  min-width:0;
+  min-height:34px;
+  max-height:140px;
+  resize:none;
+  overflow:hidden;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  line-height:1.35;
+  background:transparent;
+  border:1px solid transparent;
+  color:var(--text);
+  border-radius:6px;
+  padding:5px 6px;
+  outline:none;
+  font:inherit;
+}
+.personal-textarea:hover,
+.personal-textarea:focus{
+  border-color:var(--line2);
+  background:#111;
+}
+.personal-table-card td{
+  vertical-align:top;
+}
+
+/* V11 · Interesse annuo e Imposta % centrati */
+#accountsScreen .interest-center-head{
+  text-align:center !important;
+}
+#accountsScreen tbody td:nth-child(3),
+#accountsScreen tbody td:nth-child(4),
+#accountsScreen tfoot td:nth-child(3),
+#accountsScreen tfoot td:nth-child(4){
+  text-align:center !important;
+}
+#accountsScreen .percent-input-wrap{
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  width:100%;
+}
+#accountsScreen .percent-input-wrap input{
+  width:64px !important;
+  min-width:54px !important;
+  padding:5px 3px !important;
+  text-align:center !important;
+  font-family:"IBM Plex Mono",monospace;
+}
+#accountsScreen .percent-input-wrap span{
+  position:static !important;
+  right:auto !important;
+  top:auto !important;
+  transform:none !important;
+  flex:0 0 auto;
+}
+#invRate,
+#invTax{
+  text-align:center !important;
+}
+
+@media(max-width:760px){
+  .personal-textarea{
+    font-size:10px;
+    min-height:38px;
+  }
+  #accountsScreen .percent-input-wrap input{
+    width:54px !important;
+    min-width:46px !important;
+    font-size:10px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2548,8 +2626,8 @@ th,td,
       <tr>
         <th>Conto</th>
         <th style="text-align:right">Capitale iniziale</th>
-        <th style="text-align:right">Interesse annuo</th>
-        <th style="text-align:right">Imposta %</th>
+        <th class="interest-center-head">Interesse annuo</th>
+        <th class="interest-center-head">Imposta %</th>
         <th style="text-align:right">Interessi netti 12 mesi</th>
         <th style="text-align:right">Capitale fine periodo</th>
         <th>Note</th>
@@ -3242,12 +3320,18 @@ function deletePersonal(id){
   renderPersonalCounts();
 }
 
+function autoGrowPersonalText(el){
+  if(!el)return;
+  el.style.height="auto";
+  el.style.height=Math.min(el.scrollHeight,140)+"px";
+}
+
 function renderPersonalCounts(){
   const ins=(state.liquidity||[]).filter(x=>x.type==="in");
   const outs=(state.liquidity||[]).filter(x=>x.type==="out");
 
   const row=(x,list,i)=>`<tr>
-    <td><input class="editable-table-input" value="${esc(x.desc)}" onchange="updatePersonal(${x.id},'desc',this.value)"></td>
+    <td><textarea class="personal-textarea" rows="1" oninput="autoGrowPersonalText(this)" onchange="updatePersonal(${x.id},'desc',this.value)">${esc(x.desc)}</textarea></td>
     <td><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(x.amount)}" onchange="updatePersonal(${x.id},'amount',this.value)"></td>
     <td><div class="table-actions">
       <button class="order-btn" ${i===0?"disabled":""} onclick="movePersonal(${x.id},-1)">↑</button>
@@ -3279,6 +3363,10 @@ function renderPersonalCounts(){
   finalEl.className="stat-value "+(final>0?"pos":final<0?"neg":"");
   const banner=document.getElementById("personalFinalBanner");
   banner.className=final>0?"pos":final<0?"neg":"";
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll("#personalScreen .personal-textarea").forEach(autoGrowPersonalText);
+  });
 }
 
 
@@ -3846,7 +3934,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=10").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=11").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
