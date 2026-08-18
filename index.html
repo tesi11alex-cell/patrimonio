@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="7.0">
+<meta name="app-version" content="8.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -3776,7 +3776,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=7").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=8").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
@@ -4004,28 +4004,45 @@ if("serviceWorker" in navigator){
       return;
     }
 
-    setStatus("Accesso Google…","syncing");
+    setStatus("Apro accesso Google…","syncing");
 
     try{
-      await auth.signInWithPopup(provider);
-    }catch(error){
-      const redirectCodes=[
-        "auth/popup-blocked",
-        "auth/cancelled-popup-request",
-        "auth/operation-not-supported-in-this-environment"
-      ];
+      const result = await auth.signInWithPopup(provider);
 
-      if(redirectCodes.includes(error.code)){
-        await auth.signInWithRedirect(provider);
+      if(result && result.user){
+        setStatus("Accesso riuscito · collegamento cloud…","syncing");
+      }
+    }catch(error){
+      console.error("Accesso Google",error);
+
+      const code = error && error.code ? error.code : "errore sconosciuto";
+
+      if(code==="auth/popup-closed-by-user"){
+        setStatus("Accesso annullato","error");
         return;
       }
 
-      if(error.code!=="auth/popup-closed-by-user"){
-        console.error("Accesso Google",error);
-        setStatus("Accesso Google non riuscito","error");
-      }else{
-        setStatus("Solo su questo dispositivo","");
+      if(code==="auth/popup-blocked"){
+        setStatus("Popup bloccato · consenti popup in Safari","error");
+        return;
       }
+
+      if(code==="auth/unauthorized-domain"){
+        setStatus("Dominio GitHub non autorizzato in Firebase","error");
+        return;
+      }
+
+      if(code==="auth/operation-not-allowed"){
+        setStatus("Google non abilitato in Firebase","error");
+        return;
+      }
+
+      if(code==="auth/network-request-failed"){
+        setStatus("Errore di rete durante l'accesso","error");
+        return;
+      }
+
+      setStatus(`Accesso non riuscito · ${code}`,"error");
     }
   }
 
@@ -4041,10 +4058,6 @@ if("serviceWorker" in navigator){
     .catch(error=>{
       console.warn("Persistenza offline Firestore non disponibile",error);
     });
-
-  auth.getRedirectResult().catch(error=>{
-    console.error("Rientro accesso Google",error);
-  });
 
   auth.onAuthStateChanged(async user=>{
     await firestoreReady;
