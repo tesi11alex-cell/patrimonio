@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="9.0">
+<meta name="app-version" content="10.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -1005,8 +1005,10 @@ details[open] .summary-arrow{transform:rotate(180deg)}
 }
 
 
+#invRate,
 #invTax{
   padding-right:24px !important;
+  padding-left:12px !important;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ctext x='3' y='13' font-size='11' font-family='Arial' fill='%238d8d8d'%3E%25%3C/text%3E%3C/svg%3E") !important;
   background-repeat:no-repeat !important;
@@ -2094,6 +2096,64 @@ details[open] .summary-arrow{transform:rotate(180deg)}
     display:inline-flex !important;
     align-items:center;
     justify-content:center;
+  }
+}
+
+
+/* V10 · testi lunghi: vanno a capo senza allargare/rompere i riquadri */
+th,td,
+.stat-note,
+.sub,
+.chart-copy p,
+.investment-detail-head h3,
+.investment-detail-head span,
+.month-interest-card span,
+.month-interest-card b{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+
+.investment-textarea{
+  width:100%;
+  min-width:90px;
+  min-height:34px;
+  max-height:110px;
+  resize:none;
+  overflow:hidden;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  line-height:1.35;
+  background:transparent;
+  border:1px solid transparent;
+  color:var(--text);
+  border-radius:6px;
+  padding:5px 6px;
+  outline:none;
+  font:inherit;
+}
+
+.investment-textarea:hover,
+.investment-textarea:focus{
+  border-color:var(--line2);
+  background:#111;
+}
+
+.percent-input-wrap input{
+  background-image:none !important;
+  padding-left:6px !important;
+}
+
+@media(max-width:760px){
+  .investment-textarea{
+    min-width:78px;
+    font-size:10px;
+  }
+
+  #accountsScreen table th,
+  #accountsScreen table td{
+    white-space:normal;
+    overflow-wrap:anywhere;
   }
 }
 
@@ -3344,6 +3404,12 @@ function showInvestmentMonths(id){
     </div>`;
 }
 
+function autoGrowInvestmentText(el){
+  if(!el)return;
+  el.style.height="auto";
+  el.style.height=Math.min(el.scrollHeight,110)+"px";
+}
+
 function renderInvestments(){
   const body=document.getElementById("investmentsBody");
   let totalCap=0,totalNet=0,totalFinal=0;
@@ -3355,13 +3421,13 @@ function renderInvestments(){
     totalFinal+=c.finalBalance;
 
     return`<tr>
-      <td><input class="editable-table-input" value="${esc(x.name)}" onchange="updateInvestment(${x.id},'name',this.value)"></td>
+      <td><textarea class="investment-textarea" rows="1" oninput="autoGrowInvestmentText(this)" onchange="updateInvestment(${x.id},'name',this.value)">${esc(x.name)}</textarea></td>
       <td><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(x.capital)}" onchange="updateInvestment(${x.id},'capital',this.value)"></td>
-      <td><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(x.rate)}" onchange="updateInvestment(${x.id},'rate',this.value)"></td>
-      <td><div class="percent-input-wrap"><input class="editable-table-input amount" type="number" min="0" max="100" step=".1" value="${Number(x.tax)}" onchange="updateInvestment(${x.id},'tax',this.value)"><span>%</span></div></td>
+      <td><div class="percent-input-wrap"><input class="editable-table-input" type="number" min="0" step=".01" value="${Number(x.rate)}" onchange="updateInvestment(${x.id},'rate',this.value)"><span>%</span></div></td>
+      <td><div class="percent-input-wrap"><input class="editable-table-input" type="number" min="0" max="100" step=".1" value="${Number(x.tax)}" onchange="updateInvestment(${x.id},'tax',this.value)"><span>%</span></div></td>
       <td class="num pos">${euro(c.net)}</td>
       <td class="num">${euro(c.finalBalance)}</td>
-      <td><input class="editable-table-input" value="${esc(x.note||"")}" onchange="updateInvestment(${x.id},'note',this.value)"></td>
+      <td><textarea class="investment-textarea" rows="1" oninput="autoGrowInvestmentText(this)" onchange="updateInvestment(${x.id},'note',this.value)">${esc(x.note||"")}</textarea></td>
       <td>
         <div class="table-actions">
           <button class="investment-detail-btn" onclick="showInvestmentMonths(${x.id})">12 mesi</button>
@@ -3380,6 +3446,10 @@ function renderInvestments(){
   document.getElementById("invTotalCapital").textContent=euro(totalCap);
   document.getElementById("invTotalNet").textContent=euro(totalNet);
   document.getElementById("invTotalFinal").textContent=euro(totalFinal);
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll("#accountsScreen .investment-textarea").forEach(autoGrowInvestmentText);
+  });
 }
 
 function renderConnected(){renderSummary();renderMonths();renderLiquidity();renderRules();renderPersonalCounts()}
@@ -3776,7 +3846,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=9").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=10").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
