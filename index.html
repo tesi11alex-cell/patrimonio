@@ -1839,6 +1839,37 @@ details[open] .summary-arrow{transform:rotate(180deg)}
   }
 }
 
+
+@media(max-width:760px){
+  .mobile-category-select{
+    width:100%;
+    appearance:auto;
+  }
+
+  .mobile-network-status{
+    position:fixed;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:13000;
+    border:1px solid var(--line2);
+    background:rgba(10,10,10,.96);
+    color:var(--muted);
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:9px;
+    font-family:"IBM Plex Mono",monospace;
+    box-shadow:0 6px 22px rgba(0,0,0,.35);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+  }
+
+  .mobile-network-status.show{opacity:1}
+  .mobile-network-status.online{color:var(--green)}
+  .mobile-network-status.offline{color:var(--gold)}
+}
+
 </style>
 </head>
 <body>
@@ -1930,9 +1961,9 @@ details[open] .summary-arrow{transform:rotate(180deg)}
 
       <input id="mobileAddDesc" class="field" placeholder="Descrizione">
 
-      <div class="category-create-wrap">
-        <input id="mobileAddCategory" class="field" list="expenseCategories" placeholder="Categoria">
-        <button class="category-add-btn" type="button" onclick="createMobileCategory()">+</button>
+      <div class="category-create-wrap mobile-category-select-wrap">
+        <select id="mobileAddCategory" class="field mobile-category-select"></select>
+        <button class="category-add-btn" type="button" title="Nuova categoria" onclick="createMobileCategory()">+</button>
       </div>
 
       <div class="mobile-add-period">
@@ -2328,6 +2359,7 @@ details[open] .summary-arrow{transform:rotate(180deg)}
 </section>
 
 
+<div id="mobileNetworkStatus" class="mobile-network-status"></div>
 <nav class="mobile-bottom-nav" id="mobileBottomNav">
   <button class="mobile-nav-btn active" data-target="quick" onclick="showScreen('quick')">
     <span class="mobile-nav-icon">●</span><span>Mese</span>
@@ -3168,6 +3200,20 @@ function renderMobileHomeList(items,type){
   `).join("");
 }
 
+
+function renderMobileCategorySelect(type,selected=""){
+  const select=document.getElementById("mobileAddCategory");
+  if(!select)return;
+
+  const list=type==="in"?(state.incomeCategories||[]):(state.expenseCategories||[]);
+  const label=type==="in"?"Seleziona categoria entrata":"Seleziona categoria uscita";
+
+  select.innerHTML=`<option value="">${label}</option>`+
+    list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+
+  if(selected) select.value=selected;
+}
+
 function openMobileAdd(type){
   mobileAddType=type;
   const {year,month}=getDeviceCurrentPeriod();
@@ -3175,10 +3221,7 @@ function openMobileAdd(type){
   document.getElementById("mobileAddTitle").textContent=type==="in"?"Aggiungi entrata":"Aggiungi uscita";
   document.getElementById("mobileAddKicker").textContent=`${MONTHS[month]} ${year}`;
 
-  const category=document.getElementById("mobileAddCategory");
-  category.value="";
-  category.setAttribute("list",type==="in"?"incomeCategories":"expenseCategories");
-  category.placeholder=type==="in"?"Categoria entrata":"Categoria uscita";
+  renderMobileCategorySelect(type);
 
   document.getElementById("mobileAddAmount").value="";
   document.getElementById("mobileAddDesc").value="";
@@ -3220,7 +3263,7 @@ function createMobileCategory(){
     renderCategoryOptions();
   }
 
-  document.getElementById("mobileAddCategory").value=clean;
+  renderMobileCategorySelect(mobileAddType,clean);
 }
 
 function saveMobileMovement(){
@@ -3247,7 +3290,9 @@ function saveMobileMovement(){
     type:mobileAddType,
     desc,
     category,
-    amount
+    amount,
+    pendingSync:true,
+    updatedAt:Date.now()
   });
 
   state.selectedYear=year;
@@ -3299,6 +3344,35 @@ showScreen=function(id){
   }
 };
 
+
+function showNetworkStatus(text,mode){
+  const el=document.getElementById("mobileNetworkStatus");
+  if(!el)return;
+  el.textContent=text;
+  el.className=`mobile-network-status show ${mode||""}`;
+  clearTimeout(window.__networkToastTimer);
+  window.__networkToastTimer=setTimeout(()=>{
+    el.classList.remove("show");
+  },1800);
+}
+
+function handleOnline(){
+  showNetworkStatus("Online · pronto a sincronizzare","online");
+
+  // Hook già pronto: quando aggiungeremo Firestore,
+  // qui verranno inviati automaticamente i movimenti pendingSync.
+  if(typeof syncPendingDataToCloud==="function"){
+    syncPendingDataToCloud();
+  }
+}
+
+function handleOffline(){
+  showNetworkStatus("Offline · salvo sul dispositivo","offline");
+}
+
+window.addEventListener("online",handleOnline);
+window.addEventListener("offline",handleOffline);
+
 function setupMobileApp(){
   if(!isMobileAppView())return;
 
@@ -3312,6 +3386,10 @@ function setupMobileApp(){
   showScreen("quick");
   renderMobileHome();
   updateMobileBottomNav();
+
+  if(!navigator.onLine){
+    setTimeout(()=>showNetworkStatus("Offline · salvo sul dispositivo","offline"),300);
+  }
 }
 
 window.addEventListener("resize",()=>{
@@ -3322,6 +3400,13 @@ window.addEventListener("resize",()=>{
 });
 
 setupMobileApp();
+
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+  });
+}
 
 </script>
 </body>
