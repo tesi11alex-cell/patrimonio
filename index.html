@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="4.0">
+<meta name="app-version" content="5.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -2026,6 +2026,68 @@ details[open] .summary-arrow{transform:rotate(180deg)}
   }
 }
 
+
+.cloud-auth-btn{
+  white-space:nowrap;
+}
+
+.cloud-sync-strip{
+  min-height:28px;
+  margin:-9px 0 16px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:9px;
+}
+
+.cloud-sync-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#555;
+  flex:0 0 auto;
+}
+
+.cloud-sync-strip.online .cloud-sync-dot{background:var(--green)}
+.cloud-sync-strip.syncing .cloud-sync-dot{background:var(--gold)}
+.cloud-sync-strip.offline .cloud-sync-dot{background:var(--red)}
+.cloud-sync-strip.error .cloud-sync-dot{background:var(--red)}
+
+.cloud-sync-user{
+  color:#666;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+@media(max-width:760px){
+  header{
+    gap:7px !important;
+  }
+
+  .top-right{
+    gap:6px !important;
+  }
+
+  .cloud-auth-btn{
+    padding:8px 9px !important;
+    font-size:10px !important;
+    min-width:0;
+  }
+
+  .cloud-sync-strip{
+    margin:-5px 0 11px;
+    min-height:20px;
+    font-size:8px;
+  }
+
+  .cloud-sync-user{
+    max-width:105px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2037,9 +2099,16 @@ details[open] .summary-arrow{transform:rotate(180deg)}
   </div>
   <div class="top-right">
     <select id="yearSelect" class="year-select"></select>
+    <button id="cloudAuthBtn" class="btn cloud-auth-btn" type="button">Accedi Google</button>
     <button class="btn" onclick="window.print()">Stampa</button>
   </div>
 </header>
+
+<div class="cloud-sync-strip" id="cloudSyncStrip" aria-live="polite">
+  <span class="cloud-sync-dot" id="cloudSyncDot"></span>
+  <span id="cloudSyncStatus">Solo su questo dispositivo</span>
+  <span class="cloud-sync-user" id="cloudSyncUser"></span>
+</div>
 
 <nav class="screen-nav" id="screenNav"></nav>
 
@@ -2631,7 +2700,12 @@ function loadAndMigrate(){
   });
   return s;
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
+  if(window.patrimonioCloud && typeof window.patrimonioCloud.queueSave==="function"){
+    window.patrimonioCloud.queueSave();
+  }
+}
 function uid(){return Date.now()+Math.floor(Math.random()*100000)}
 function euro(v){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(Number(v)||0)}
 function pct(v,total){return total?((v/total*100).toFixed(1).replace(".",",")+"%"):"0%"}
@@ -3693,10 +3767,319 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=4").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=5").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
 </script>
+
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAI6gnwATgqoKWJBZ6gED8VhvyNBxV_xqk",
+    authDomain: "planner-alessandro.firebaseapp.com",
+    projectId: "planner-alessandro",
+    storageBucket: "planner-alessandro.firebasestorage.app",
+    messagingSenderId: "437936177868",
+    appId: "1:437936177868:web:4e57ce00b20e9234d7f869"
+  };
+
+  const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+  const auth = app.auth();
+  const db = app.firestore();
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:"select_account"});
+
+  let currentUser = null;
+  let docRef = null;
+  let unsubscribe = null;
+  let cloudTimer = null;
+  let applyingRemote = false;
+  let lastQueuedFingerprint = "";
+  let lastAppliedFingerprint = "";
+  let firstSnapshotHandled = false;
+
+  const authBtn = document.getElementById("cloudAuthBtn");
+  const strip = document.getElementById("cloudSyncStrip");
+  const statusEl = document.getElementById("cloudSyncStatus");
+  const userEl = document.getElementById("cloudSyncUser");
+
+  function setStatus(text, mode){
+    if(statusEl) statusEl.textContent = text;
+    if(strip){
+      strip.classList.remove("online","syncing","offline","error");
+      if(mode) strip.classList.add(mode);
+    }
+  }
+
+  function cleanMovement(m){
+    const x = {...m};
+    delete x.pendingSync;
+    return x;
+  }
+
+  function syncPayload(){
+    return {
+      movements: Array.isArray(state.movements) ? state.movements.map(cleanMovement) : [],
+      incomeCategories: Array.isArray(state.incomeCategories) ? [...state.incomeCategories] : [],
+      expenseCategories: Array.isArray(state.expenseCategories) ? [...state.expenseCategories] : [],
+      rules: Array.isArray(state.rules) ? JSON.parse(JSON.stringify(state.rules)) : [],
+      liquidity: Array.isArray(state.liquidity) ? JSON.parse(JSON.stringify(state.liquidity)) : [],
+      investments: Array.isArray(state.investments) ? JSON.parse(JSON.stringify(state.investments)) : []
+    };
+  }
+
+  function fingerprint(payload){
+    try{return JSON.stringify(payload)}catch(e){return String(Date.now())}
+  }
+
+  function normalizePayload(payload){
+    const p = payload && typeof payload==="object" ? payload : {};
+    return {
+      movements: Array.isArray(p.movements) ? p.movements.map(m=>({...m,pendingSync:false})) : [],
+      incomeCategories: Array.isArray(p.incomeCategories) ? p.incomeCategories : [...seed.incomeCategories],
+      expenseCategories: Array.isArray(p.expenseCategories) ? p.expenseCategories : [...seed.expenseCategories],
+      rules: Array.isArray(p.rules) ? p.rules : [],
+      liquidity: Array.isArray(p.liquidity) ? p.liquidity : [...seed.liquidity],
+      investments: Array.isArray(p.investments) ? p.investments : [...seed.investments]
+    };
+  }
+
+  function applyRemotePayload(payload){
+    const p = normalizePayload(payload);
+    const fp = fingerprint({
+      ...p,
+      movements:p.movements.map(cleanMovement)
+    });
+
+    const currentFp = fingerprint(syncPayload());
+    if(fp===currentFp){
+      lastAppliedFingerprint = fp;
+      lastQueuedFingerprint = fp;
+      return;
+    }
+
+    applyingRemote = true;
+    try{
+      state.movements = p.movements;
+      state.incomeCategories = [...new Set([...seed.incomeCategories,...p.incomeCategories].filter(Boolean))];
+      state.expenseCategories = [...new Set([...seed.expenseCategories,...p.expenseCategories].filter(Boolean))];
+      state.rules = p.rules;
+      state.liquidity = p.liquidity;
+      state.investments = p.investments;
+
+      localStorage.setItem(KEY,JSON.stringify(state));
+      lastAppliedFingerprint = fingerprint(syncPayload());
+      lastQueuedFingerprint = lastAppliedFingerprint;
+
+      renderAll();
+      if(typeof renderMobileHome==="function") renderMobileHome();
+    }finally{
+      applyingRemote = false;
+    }
+  }
+
+  function queueSave(){
+    if(applyingRemote || !currentUser || !docRef) return;
+
+    const payload = syncPayload();
+    const fp = fingerprint(payload);
+
+    if(fp===lastQueuedFingerprint) return;
+
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(()=>{
+      flushCloud(payload, fp);
+    },350);
+  }
+
+  function flushCloud(payloadOverride, fpOverride){
+    if(applyingRemote || !currentUser || !docRef) return;
+
+    const payload = payloadOverride || syncPayload();
+    const fp = fpOverride || fingerprint(payload);
+
+    if(fp===lastQueuedFingerprint) return;
+    lastQueuedFingerprint = fp;
+
+    if(navigator.onLine){
+      setStatus("Sincronizzazione…","syncing");
+    }else{
+      setStatus("Offline · modifiche in coda","offline");
+    }
+
+    docRef.set({
+      version:5,
+      payload,
+      clientUpdatedAt:Date.now(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true})
+    .then(()=>{
+      setStatus(navigator.onLine ? "Sincronizzato" : "Offline · salvato sul dispositivo",
+                navigator.onLine ? "online" : "offline");
+    })
+    .catch(error=>{
+      console.error("Errore sincronizzazione patrimonio",error);
+      lastQueuedFingerprint = "";
+      if(error && error.code==="permission-denied"){
+        setStatus("Accesso Firestore non autorizzato","error");
+      }else{
+        setStatus("Errore sincronizzazione","error");
+      }
+    });
+  }
+
+  function stopListener(){
+    if(typeof unsubscribe==="function"){
+      unsubscribe();
+      unsubscribe=null;
+    }
+  }
+
+  async function startListener(user){
+    stopListener();
+    firstSnapshotHandled = false;
+    docRef = db.collection("users").doc(user.uid).collection("patrimonio").doc("current");
+
+    unsubscribe = docRef.onSnapshot({includeMetadataChanges:true}, snapshot=>{
+      if(!currentUser || currentUser.uid!==user.uid) return;
+
+      if(!firstSnapshotHandled){
+        firstSnapshotHandled = true;
+
+        if(!snapshot.exists){
+          // Primo collegamento: questo dispositivo diventa la base del cloud.
+          lastQueuedFingerprint = "";
+          flushCloud();
+          setStatus(navigator.onLine ? "Primo salvataggio cloud…" : "Offline · primo salvataggio in coda",
+                    navigator.onLine ? "syncing" : "offline");
+          return;
+        }
+      }
+
+      if(!snapshot.exists) return;
+
+      const data = snapshot.data() || {};
+      if(!data.payload) return;
+
+      // Una scrittura locale Firestore è già rappresentata nello state locale.
+      if(snapshot.metadata && snapshot.metadata.hasPendingWrites){
+        if(!navigator.onLine) setStatus("Offline · modifiche in coda","offline");
+        return;
+      }
+
+      applyRemotePayload(data.payload);
+      setStatus(navigator.onLine ? "Sincronizzato" : "Offline · dati disponibili",
+                navigator.onLine ? "online" : "offline");
+    },error=>{
+      console.error("Listener patrimonio",error);
+      if(error && error.code==="permission-denied"){
+        setStatus("Accesso Firestore non autorizzato","error");
+      }else{
+        setStatus("Cloud non disponibile","error");
+      }
+    });
+  }
+
+  async function signInGoogle(){
+    if(currentUser){
+      if(confirm("Disconnettere l'account Google da Patrimonio?")){
+        await auth.signOut();
+      }
+      return;
+    }
+
+    setStatus("Accesso Google…","syncing");
+
+    try{
+      await auth.signInWithPopup(provider);
+    }catch(error){
+      const redirectCodes=[
+        "auth/popup-blocked",
+        "auth/cancelled-popup-request",
+        "auth/operation-not-supported-in-this-environment"
+      ];
+
+      if(redirectCodes.includes(error.code)){
+        await auth.signInWithRedirect(provider);
+        return;
+      }
+
+      if(error.code!=="auth/popup-closed-by-user"){
+        console.error("Accesso Google",error);
+        setStatus("Accesso Google non riuscito","error");
+      }else{
+        setStatus("Solo su questo dispositivo","");
+      }
+    }
+  }
+
+  if(authBtn){
+    authBtn.addEventListener("click",signInGoogle);
+  }
+
+  // Persistenza dell'accesso Google.
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+
+  // Cache Firestore persistente: PC/iPhone continuano a lavorare senza rete.
+  const firestoreReady = db.enablePersistence({synchronizeTabs:true})
+    .catch(error=>{
+      console.warn("Persistenza offline Firestore non disponibile",error);
+    });
+
+  auth.getRedirectResult().catch(error=>{
+    console.error("Rientro accesso Google",error);
+  });
+
+  auth.onAuthStateChanged(async user=>{
+    await firestoreReady;
+    stopListener();
+    currentUser = user;
+    docRef = null;
+    lastQueuedFingerprint = "";
+    lastAppliedFingerprint = "";
+
+    if(!user){
+      if(authBtn) authBtn.textContent="Accedi Google";
+      if(userEl) userEl.textContent="";
+      setStatus(navigator.onLine ? "Solo su questo dispositivo" : "Offline · solo dispositivo",
+                navigator.onLine ? "" : "offline");
+      return;
+    }
+
+    if(authBtn) authBtn.textContent="Google ✓";
+    if(userEl) userEl.textContent=user.displayName || user.email || "";
+    setStatus("Collegamento cloud…","syncing");
+    await startListener(user);
+  });
+
+  window.addEventListener("online",()=>{
+    if(currentUser){
+      setStatus("Online · sincronizzazione…","syncing");
+      lastQueuedFingerprint = "";
+      queueSave();
+    }else{
+      setStatus("Solo su questo dispositivo","");
+    }
+  });
+
+  window.addEventListener("offline",()=>{
+    setStatus(currentUser ? "Offline · modifiche in coda" : "Offline · solo dispositivo","offline");
+  });
+
+  window.patrimonioCloud = {
+    queueSave,
+    flushNow:()=>{lastQueuedFingerprint="";flushCloud();},
+    getUser:()=>currentUser
+  };
+})();
+</script>
+
 </body>
 </html>

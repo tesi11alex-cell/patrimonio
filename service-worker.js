@@ -1,4 +1,4 @@
-const CACHE_NAME="patrimonio-v4";
+const CACHE_NAME="patrimonio-v5";
 const APP_SHELL=[
   "./index.html",
   "./manifest.webmanifest",
@@ -24,7 +24,7 @@ self.addEventListener("activate",event=>{
 });
 
 self.addEventListener("fetch",event=>{
-  if(event.request.method!=="GET")return;
+  if(event.request.method!=="GET") return;
 
   if(event.request.mode==="navigate"){
     event.respondWith(
@@ -44,10 +44,8 @@ self.addEventListener("fetch",event=>{
   event.respondWith(
     fetch(event.request)
       .then(response=>{
-        if(response && response.ok){
-          const copy=response.clone();
-          caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
-        }
+        const copy=response.clone();
+        caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy)).catch(()=>{});
         return response;
       })
       .catch(()=>caches.match(event.request))
