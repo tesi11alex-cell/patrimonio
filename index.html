@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="3.0">
+<meta name="app-version" content="4.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -1972,6 +1972,60 @@ details[open] .summary-arrow{transform:rotate(180deg)}
   }
 }
 
+
+@media(max-width:760px){
+  .mobile-two-column-ledger,
+  #quickScreen .mobile-month-columns{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:7px !important;
+    align-items:start !important;
+  }
+
+  #quickScreen .mobile-list-card{
+    width:auto !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+
+  .mobile-home-row{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    column-gap:4px !important;
+    row-gap:3px !important;
+    position:relative;
+    padding:8px 0 7px !important;
+  }
+
+  .mobile-home-row .mh-text{
+    min-width:0;
+    padding-right:0 !important;
+  }
+
+  .mobile-home-row .mh-amount{
+    align-self:start;
+    text-align:right !important;
+    padding-right:1px;
+  }
+
+  .mobile-edit-action{
+    grid-column:1 / -1;
+    justify-self:start;
+    border:0;
+    background:transparent;
+    color:#8d8d8d;
+    padding:2px 0 0;
+    font-size:8px;
+    font-family:"IBM Plex Mono",monospace;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
+  .mobile-edit-action:active{
+    color:var(--text);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2024,7 +2078,7 @@ details[open] .summary-arrow{transform:rotate(180deg)}
       </button>
     </div>
 
-    <div class="mobile-month-columns">
+    <div class="mobile-month-columns mobile-two-column-ledger" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;align-items:start;">
       <div class="mobile-list-card income-list-card">
         <div class="mobile-list-head">
           <h3>Entrate</h3>
@@ -3301,14 +3355,27 @@ function renderMobileHomeList(items,type){
 
   return items.map(x=>{
     const editable=!x.scheduled && x.id!=null;
+    const safeId=editable?encodeURIComponent(String(x.id)):"";
+
     return `
       <div class="mobile-home-row ${editable?"editable-mobile-row":""}"
-           ${editable?`onclick="editMobileMovement(${x.id})"`:""}>
+           ${editable?`role="button" tabindex="0" onclick="editMobileMovement(decodeURIComponent('${safeId}'))"`:""}>
         <div class="mh-text">
           <strong>${esc(x.desc)}</strong>
-          <span>${esc(x.category||"Altro")}${x.scheduled?" · automatico":" · tocca per modificare"}</span>
+          <span>${esc(x.category||"Altro")}${x.scheduled?" · automatico":""}</span>
         </div>
-        <div class="mh-amount ${type==="in"?"pos":"neg"}">${type==="in"?"+ ":"− "}${euro(x.amount)}</div>
+
+        <div class="mh-amount ${type==="in"?"pos":"neg"}">
+          ${type==="in"?"+ ":"− "}${euro(x.amount)}
+        </div>
+
+        ${editable?`
+          <button class="mobile-edit-action"
+                  type="button"
+                  onclick="event.stopPropagation();editMobileMovement(decodeURIComponent('${safeId}'))">
+            ✎ Modifica
+          </button>
+        `:""}
       </div>
     `;
   }).join("");
@@ -3381,22 +3448,34 @@ function prepareMobilePeriodSelects(month,year){
 }
 
 function editMobileMovement(id){
-  const x=state.movements.find(m=>Number(m.id)===Number(id));
-  if(!x || x.scheduled)return;
+  const targetId=String(id);
+
+  const x=state.movements.find(m=>
+    m && m.id!=null && String(m.id)===targetId
+  );
+
+  if(!x || x.scheduled){
+    showNetworkStatus("Movimento non modificabile","offline");
+    return;
+  }
 
   mobileEditingMovementId=x.id;
-  mobileAddType=x.type;
+  mobileAddType=x.type==="in"?"in":"out";
 
-  document.getElementById("mobileAddTitle").textContent=x.type==="in"?"Modifica entrata":"Modifica uscita";
-  document.getElementById("mobileAddKicker").textContent=`${MONTHS[x.month]} ${x.year}`;
+  document.getElementById("mobileAddTitle").textContent=
+    mobileAddType==="in"?"Modifica entrata":"Modifica uscita";
+
+  document.getElementById("mobileAddKicker").textContent=
+    `${MONTHS[Number(x.month)]} ${Number(x.year)}`;
+
   document.getElementById("mobileDeleteBtn").style.display="block";
 
-  document.getElementById("mobileAddAmount").value=Number(x.amount);
+  document.getElementById("mobileAddAmount").value=Number(x.amount)||"";
   document.getElementById("mobileAddDesc").value=x.desc||"";
   document.getElementById("mobileAddFeedback").textContent="";
 
-  renderMobileCategorySelect(x.type,x.category||"Altro");
-  prepareMobilePeriodSelects(x.month,x.year);
+  renderMobileCategorySelect(mobileAddType,x.category||"Altro");
+  prepareMobilePeriodSelects(Number(x.month),Number(x.year));
 
   document.getElementById("mobileAddSheet").classList.add("open");
 }
@@ -3458,7 +3537,7 @@ function saveMobileMovement(){
   }
 
   if(mobileEditingMovementId!==null){
-    const x=state.movements.find(m=>Number(m.id)===Number(mobileEditingMovementId));
+    const x=state.movements.find(m=>m && m.id!=null && String(m.id)===String(mobileEditingMovementId));
     if(!x)return;
 
     x.year=year;
@@ -3507,7 +3586,7 @@ function deleteMobileMovement(){
 
   if(!confirm("Eliminare questo movimento?"))return;
 
-  state.movements=state.movements.filter(m=>Number(m.id)!==Number(mobileEditingMovementId));
+  state.movements=state.movements.filter(m=>!(m && m.id!=null && String(m.id)===String(mobileEditingMovementId)));
   mobileEditingMovementId=null;
   save();
 
@@ -3614,7 +3693,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=3").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=4").then(reg=>reg.update()).catch(()=>{});
   });
 }
 

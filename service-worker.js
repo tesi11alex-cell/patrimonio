@@ -1,6 +1,5 @@
-const CACHE_NAME="patrimonio-v3";
+const CACHE_NAME="patrimonio-v4";
 const APP_SHELL=[
-  "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icon-180.png",
@@ -27,13 +26,14 @@ self.addEventListener("activate",event=>{
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
 
-  // HTML: rete prima, cache solo se offline.
   if(event.request.mode==="navigate"){
     event.respondWith(
       fetch(event.request,{cache:"no-store"})
         .then(response=>{
-          const copy=response.clone();
-          caches.open(CACHE_NAME).then(cache=>cache.put("./index.html",copy));
+          if(response && response.ok){
+            const copy=response.clone();
+            caches.open(CACHE_NAME).then(cache=>cache.put("./index.html",copy));
+          }
           return response;
         })
         .catch(()=>caches.match("./index.html"))
@@ -42,13 +42,14 @@ self.addEventListener("fetch",event=>{
   }
 
   event.respondWith(
-    caches.match(event.request).then(cached=>{
-      const network=fetch(event.request).then(response=>{
-        const copy=response.clone();
-        caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
+    fetch(event.request)
+      .then(response=>{
+        if(response && response.ok){
+          const copy=response.clone();
+          caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
+        }
         return response;
-      }).catch(()=>cached);
-      return cached || network;
-    })
+      })
+      .catch(()=>caches.match(event.request))
   );
 });
