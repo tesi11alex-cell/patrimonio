@@ -6,6 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
+<meta name="app-version" content="3.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -1870,6 +1871,107 @@ details[open] .summary-arrow{transform:rotate(180deg)}
   .mobile-network-status.offline{color:var(--gold)}
 }
 
+
+@media(max-width:760px){
+  /* Entrate e uscite SEMPRE affiancate */
+  .mobile-month-columns{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    align-items:start;
+    gap:7px !important;
+  }
+
+  .mobile-list-card{
+    padding:9px !important;
+    min-width:0;
+  }
+
+  .mobile-list-head{
+    margin-bottom:5px !important;
+  }
+
+  .mobile-list-head h3{
+    font-size:11px !important;
+  }
+
+  .mobile-home-row{
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:3px !important;
+    position:relative;
+    padding:7px 1px 6px !important;
+    cursor:pointer;
+  }
+
+  .mobile-home-row.editable-mobile-row:after{
+    content:"›";
+    position:absolute;
+    right:0;
+    top:7px;
+    color:#555;
+    font-size:14px;
+  }
+
+  .mobile-home-row .mh-text{
+    padding-right:12px;
+  }
+
+  .mobile-home-row .mh-text strong{
+    font-size:9.5px !important;
+  }
+
+  .mobile-home-row .mh-text span{
+    font-size:7.5px !important;
+  }
+
+  .mobile-home-row .mh-amount{
+    font-size:9px !important;
+    text-align:left;
+  }
+
+  /* Categoria: vero menu a tendina, evidente su iPhone */
+  .mobile-category-select-wrap{
+    position:relative;
+  }
+
+  .mobile-category-select{
+    display:block !important;
+    width:100% !important;
+    height:46px;
+    padding:0 38px 0 12px !important;
+    border:1px solid #424242 !important;
+    border-radius:11px !important;
+    background-color:#111 !important;
+    color:var(--text) !important;
+    -webkit-appearance:menulist !important;
+    appearance:menulist !important;
+    font-size:13px !important;
+  }
+
+  .mobile-category-select-wrap .category-add-btn{
+    display:none !important;
+  }
+
+  .mobile-sheet-actions{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:8px;
+    margin-top:10px;
+  }
+
+  .mobile-sheet-save{
+    margin-top:0 !important;
+  }
+
+  .mobile-sheet-delete{
+    border:1px solid rgba(255,123,114,.45);
+    background:rgba(255,123,114,.08);
+    color:var(--red);
+    border-radius:13px;
+    padding:12px 14px;
+    font-size:12px;
+    font-weight:600;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1971,7 +2073,10 @@ details[open] .summary-arrow{transform:rotate(180deg)}
         <select id="mobileAddYear"></select>
       </div>
 
-      <button class="mobile-sheet-save" onclick="saveMobileMovement()">Salva movimento</button>
+      <div class="mobile-sheet-actions">
+        <button id="mobileDeleteBtn" class="mobile-sheet-delete" onclick="deleteMobileMovement()" style="display:none;">Elimina</button>
+        <button class="mobile-sheet-save" onclick="saveMobileMovement()">Salva</button>
+      </div>
       <div id="mobileAddFeedback" class="quick-feedback"></div>
     </div>
   </div>
@@ -2449,8 +2554,12 @@ function loadAndMigrate(){
   if(!s || !Array.isArray(s.movements)) s=clone(seed);
 
   if(!Array.isArray(s.rules)) s.rules=[];
-  if(!Array.isArray(s.incomeCategories)) s.incomeCategories=clone(seed.incomeCategories);
-  if(!Array.isArray(s.expenseCategories)) s.expenseCategories=clone(seed.expenseCategories);
+  if(!Array.isArray(s.incomeCategories)) s.incomeCategories=[];
+  if(!Array.isArray(s.expenseCategories)) s.expenseCategories=[];
+
+  // Mantiene le categorie personali ma reinserisce sempre quelle base.
+  s.incomeCategories=[...new Set([...seed.incomeCategories,...s.incomeCategories].filter(Boolean))];
+  s.expenseCategories=[...new Set([...seed.expenseCategories,...s.expenseCategories].filter(Boolean))];
   if(!Array.isArray(s.liquidity)) s.liquidity=clone(seed.liquidity);
   if(!Array.isArray(s.investments)) s.investments=clone(seed.investments);
   if(!("selectedMonth" in s)) s.selectedMonth=null;
@@ -3146,6 +3255,7 @@ renderAll();
 
 
 let mobileAddType="out";
+let mobileEditingMovementId=null;
 
 function isMobileAppView(){
   return window.matchMedia("(max-width:760px)").matches;
@@ -3189,15 +3299,19 @@ function renderMobileHomeList(items,type){
     return `<div class="mobile-list-empty">Nessun movimento.</div>`;
   }
 
-  return items.map(x=>`
-    <div class="mobile-home-row">
-      <div class="mh-text">
-        <strong>${esc(x.desc)}</strong>
-        <span>${esc(x.category||"Altro")}${x.scheduled?" · automatico":""}</span>
+  return items.map(x=>{
+    const editable=!x.scheduled && x.id!=null;
+    return `
+      <div class="mobile-home-row ${editable?"editable-mobile-row":""}"
+           ${editable?`onclick="editMobileMovement(${x.id})"`:""}>
+        <div class="mh-text">
+          <strong>${esc(x.desc)}</strong>
+          <span>${esc(x.category||"Altro")}${x.scheduled?" · automatico":" · tocca per modificare"}</span>
+        </div>
+        <div class="mh-amount ${type==="in"?"pos":"neg"}">${type==="in"?"+ ":"− "}${euro(x.amount)}</div>
       </div>
-      <div class="mh-amount ${type==="in"?"pos":"neg"}">${type==="in"?"+ ":"− "}${euro(x.amount)}</div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 
@@ -3205,21 +3319,42 @@ function renderMobileCategorySelect(type,selected=""){
   const select=document.getElementById("mobileAddCategory");
   if(!select)return;
 
-  const list=type==="in"?(state.incomeCategories||[]):(state.expenseCategories||[]);
-  const label=type==="in"?"Seleziona categoria entrata":"Seleziona categoria uscita";
+  const defaults=type==="in"
+    ? ["Stipendio","Professione","Rimborsi","Investimenti","Altro"]
+    : ["Casa","Auto","Tasse","Lavoro","Vacanze","Acquisti","Salute","Tempo libero","Altro"];
 
-  select.innerHTML=`<option value="">${label}</option>`+
-    list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  const key=type==="in"?"incomeCategories":"expenseCategories";
+  const list=[...new Set([...defaults,...(state[key]||[])].filter(Boolean))];
 
-  if(selected) select.value=selected;
+  // Ripara anche stati locali vecchi.
+  state[key]=list;
+  save();
+
+  const label=type==="in"?"Scegli categoria entrata":"Scegli categoria uscita";
+
+  select.innerHTML=
+    `<option value="">${label}</option>`+
+    list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("")+
+    `<option value="__new__">＋ Nuova categoria…</option>`;
+
+  select.onchange=()=>{
+    if(select.value==="__new__"){
+      createMobileCategory();
+    }
+  };
+
+  if(selected && list.includes(selected)) select.value=selected;
 }
 
 function openMobileAdd(type){
   mobileAddType=type;
+  mobileEditingMovementId=null;
+
   const {year,month}=getDeviceCurrentPeriod();
 
   document.getElementById("mobileAddTitle").textContent=type==="in"?"Aggiungi entrata":"Aggiungi uscita";
   document.getElementById("mobileAddKicker").textContent=`${MONTHS[month]} ${year}`;
+  document.getElementById("mobileDeleteBtn").style.display="none";
 
   renderMobileCategorySelect(type);
 
@@ -3227,21 +3362,43 @@ function openMobileAdd(type){
   document.getElementById("mobileAddDesc").value="";
   document.getElementById("mobileAddFeedback").textContent="";
 
-  const monthSelect=document.getElementById("mobileAddMonth");
-  const yearSelect=document.getElementById("mobileAddYear");
-
-  if(!monthSelect.options.length){
-    monthSelect.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
-  }
-  if(!yearSelect.options.length){
-    yearSelect.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join("");
-  }
-
-  monthSelect.value=month;
-  yearSelect.value=year;
+  prepareMobilePeriodSelects(month,year);
 
   document.getElementById("mobileAddSheet").classList.add("open");
   setTimeout(()=>document.getElementById("mobileAddAmount").focus(),220);
+}
+
+
+function prepareMobilePeriodSelects(month,year){
+  const monthSelect=document.getElementById("mobileAddMonth");
+  const yearSelect=document.getElementById("mobileAddYear");
+
+  monthSelect.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+  yearSelect.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join("");
+
+  monthSelect.value=month;
+  yearSelect.value=year;
+}
+
+function editMobileMovement(id){
+  const x=state.movements.find(m=>Number(m.id)===Number(id));
+  if(!x || x.scheduled)return;
+
+  mobileEditingMovementId=x.id;
+  mobileAddType=x.type;
+
+  document.getElementById("mobileAddTitle").textContent=x.type==="in"?"Modifica entrata":"Modifica uscita";
+  document.getElementById("mobileAddKicker").textContent=`${MONTHS[x.month]} ${x.year}`;
+  document.getElementById("mobileDeleteBtn").style.display="block";
+
+  document.getElementById("mobileAddAmount").value=Number(x.amount);
+  document.getElementById("mobileAddDesc").value=x.desc||"";
+  document.getElementById("mobileAddFeedback").textContent="";
+
+  renderMobileCategorySelect(x.type,x.category||"Altro");
+  prepareMobilePeriodSelects(x.month,x.year);
+
+  document.getElementById("mobileAddSheet").classList.add("open");
 }
 
 function closeMobileAdd(){
@@ -3251,27 +3408,39 @@ function closeMobileAdd(){
 function createMobileCategory(){
   const label=mobileAddType==="in"?"entrata":"uscita";
   const name=prompt(`Nome nuova categoria ${label}:`);
-  if(name===null)return;
 
-  const clean=String(name).trim();
-  if(!clean)return;
-
-  const key=mobileAddType==="in"?"incomeCategories":"expenseCategories";
-  if(!(state[key]||[]).some(x=>x.toLowerCase()===clean.toLowerCase())){
-    state[key].push(clean);
-    save();
-    renderCategoryOptions();
+  if(name===null){
+    renderMobileCategorySelect(mobileAddType);
+    return;
   }
 
+  const clean=String(name).trim();
+  if(!clean){
+    renderMobileCategorySelect(mobileAddType);
+    return;
+  }
+
+  const key=mobileAddType==="in"?"incomeCategories":"expenseCategories";
+  if(!Array.isArray(state[key])) state[key]=[];
+
+  if(!state[key].some(x=>String(x).toLowerCase()===clean.toLowerCase())){
+    state[key].push(clean);
+  }
+
+  save();
+  renderCategoryOptions();
   renderMobileCategorySelect(mobileAddType,clean);
+  showMobileAddFeedback(`Categoria "${clean}" salvata.`,false);
 }
 
 function saveMobileMovement(){
   const amount=parseFloat(document.getElementById("mobileAddAmount").value);
   const desc=document.getElementById("mobileAddDesc").value.trim();
-  const category=document.getElementById("mobileAddCategory").value.trim()||inferCategory(desc,mobileAddType);
+  let category=document.getElementById("mobileAddCategory").value.trim();
   const month=parseInt(document.getElementById("mobileAddMonth").value);
   const year=parseInt(document.getElementById("mobileAddYear").value);
+
+  if(category==="__new__") category="";
 
   if(!(amount>0)){
     showMobileAddFeedback("Inserisci l'importo.",true);
@@ -3283,17 +3452,40 @@ function saveMobileMovement(){
     return;
   }
 
-  state.movements.push({
-    id:uid(),
-    year,
-    month,
-    type:mobileAddType,
-    desc,
-    category,
-    amount,
-    pendingSync:true,
-    updatedAt:Date.now()
-  });
+  if(!category){
+    showMobileAddFeedback("Scegli una categoria.",true);
+    return;
+  }
+
+  if(mobileEditingMovementId!==null){
+    const x=state.movements.find(m=>Number(m.id)===Number(mobileEditingMovementId));
+    if(!x)return;
+
+    x.year=year;
+    x.month=month;
+    x.type=mobileAddType;
+    x.desc=desc;
+    x.category=category;
+    x.amount=amount;
+    x.pendingSync=true;
+    x.updatedAt=Date.now();
+
+    showMobileAddFeedback("Movimento modificato.",false);
+  }else{
+    state.movements.push({
+      id:uid(),
+      year,
+      month,
+      type:mobileAddType,
+      desc,
+      category,
+      amount,
+      pendingSync:true,
+      updatedAt:Date.now()
+    });
+
+    showMobileAddFeedback(`${mobileAddType==="in"?"Entrata":"Uscita"} salvata.`,false);
+  }
 
   state.selectedYear=year;
   state.selectedMonth=month;
@@ -3305,8 +3497,26 @@ function saveMobileMovement(){
   renderLiquidity();
   renderMobileHome();
 
-  showMobileAddFeedback(`${mobileAddType==="in"?"Entrata":"Uscita"} salvata.`,false);
+  mobileEditingMovementId=null;
   setTimeout(closeMobileAdd,450);
+}
+
+
+function deleteMobileMovement(){
+  if(mobileEditingMovementId===null)return;
+
+  if(!confirm("Eliminare questo movimento?"))return;
+
+  state.movements=state.movements.filter(m=>Number(m.id)!==Number(mobileEditingMovementId));
+  mobileEditingMovementId=null;
+  save();
+
+  renderSummary();
+  renderMonths();
+  renderLiquidity();
+  renderMobileHome();
+
+  closeMobileAdd();
 }
 
 function showMobileAddFeedback(text,error){
@@ -3404,7 +3614,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=3").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
