@@ -1,0 +1,3328 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libretto Patrimonio Dashboard</title>
+
+<meta name="theme-color" content="#050505">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Patrimonio">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505;
+  --panel:#0d0d0d;
+  --panel2:#121212;
+  --line:#252525;
+  --line2:#3b3b3b;
+  --text:#f3f3f3;
+  --muted:#8a8a8a;
+  --green:#67d696;
+  --red:#ff7b72;
+  --gold:#d7b36a;
+  --blue:#7aa2f7;
+  --shadow:0 12px 28px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  padding:24px 14px 60px;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.sheet{max-width:1180px;margin:auto}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+.title-wrap{display:flex;flex-direction:column;gap:8px}
+.eyebrow{
+  margin:0;
+  color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+h1{
+  margin:0;
+  font-size:clamp(28px,5vw,44px);
+  font-weight:500;
+  letter-spacing:-.04em;
+}
+.top-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.year-select,.field,select{
+  background:var(--panel);
+  border:1px solid var(--line);
+  color:var(--text);
+  border-radius:10px;
+  padding:10px 12px;
+  outline:none;
+}
+.year-select{min-width:110px}
+.btn{
+  border:1px solid var(--line2);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:10px;
+  padding:10px 12px;
+}
+.btn.primary{
+  background:var(--text);
+  color:#050505;
+  border-color:var(--text);
+  font-weight:600;
+}
+.btn.small{padding:6px 9px;font-size:11px;border-radius:7px}
+.btn.danger{color:var(--red)}
+.screen-nav{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:24px;
+}
+.nav-card{
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:16px;
+  padding:14px 12px;
+  color:var(--muted);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:88px;
+  text-align:center;
+  transition:.18s ease;
+  box-shadow:var(--shadow);
+}
+.nav-card:hover{transform:translateY(-2px);border-color:#4b4b4b;color:var(--text)}
+.nav-card.active{
+  background:linear-gradient(180deg,#171717 0%, #0d0d0d 100%);
+  color:var(--text);
+  border-color:#4e4e4e;
+}
+.nav-icon{font-size:22px;line-height:1}
+.nav-label{font-size:12px;font-weight:500}
+.screen{
+  display:none;
+  animation:fadeIn .18s ease;
+}
+.screen.active{display:block}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section-num{
+  color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10px;
+}
+.section-num:after{content:" /"}
+h2{
+  margin:0;
+  font-size:20px;
+  font-weight:500;
+  letter-spacing:-.02em;
+}
+.sub{
+  margin:-4px 0 16px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.stat-card:before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+}
+.stat-card.in:before{background:var(--green)}
+.stat-card.out:before{background:var(--red)}
+.stat-card.balance:before{background:var(--gold)}
+.stat-label{
+  margin:0 0 9px;
+  color:var(--muted);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.stat-value{
+  margin:0;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:26px;
+  font-weight:500;
+  letter-spacing:-.03em;
+}
+.stat-note{
+  margin:7px 0 0;
+  color:var(--muted);
+  font-size:11.5px;
+}
+.chart-wrap{
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:14px;
+  margin-top:12px;
+}
+.chart-card,.legend-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+.chart-card{min-height:400px}
+.donut-layout{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:12px;
+  align-items:center;
+}
+.donut-box{
+  position:relative;
+  width:320px;
+  height:320px;
+  margin:auto;
+}
+#donutSvg{width:320px;height:320px;display:block}
+.donut-center{
+  position:absolute;
+  inset:50% auto auto 50%;
+  transform:translate(-50%,-50%);
+  width:148px;
+  height:148px;
+  border-radius:50%;
+  background:#0a0a0a;
+  border:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:16px;
+}
+.center-kicker{
+  color:var(--muted);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:6px;
+}
+.center-value{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:19px;
+  font-weight:600;
+  line-height:1.15;
+}
+.center-sub{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:10px;
+}
+.chart-copy h3{
+  margin:0 0 8px;
+  font-size:17px;
+  font-weight:500;
+}
+.chart-copy p{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+.legend-card h3{
+  margin:0 0 14px;
+  font-size:15px;
+  font-weight:500;
+}
+.legend-list{display:flex;flex-direction:column;gap:10px}
+.legend-item{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  border-radius:12px;
+  padding:12px 13px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:10px;
+  align-items:center;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.legend-item:hover,.legend-item.active{
+  border-color:#4c4c4c;
+  transform:translateY(-1px);
+}
+.legend-dot{
+  width:12px;height:12px;border-radius:50%;
+}
+.legend-title{font-size:12px;font-weight:500}
+.legend-meta{font-size:10px;color:var(--muted);margin-top:2px}
+.legend-value{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12px;
+  white-space:nowrap;
+}
+.toolbar{
+  display:grid;
+  grid-template-columns:1.5fr .8fr .8fr .8fr auto;
+  gap:8px;
+  margin-bottom:14px;
+}
+.month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.month-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  min-height:160px;
+  box-shadow:var(--shadow);
+}
+.month-card h3{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin:0 0 10px;
+  font-size:14px;
+  font-weight:500;
+}
+.saldo{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+}
+.pos{color:var(--green)}
+.neg{color:var(--red)}
+.zero{color:var(--muted)}
+.line-list{list-style:none;margin:0;padding:0;font-size:11.5px}
+.line-list li{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:8px;
+  align-items:center;
+  padding:5px 0;
+  border-bottom:1px solid var(--line);
+  color:var(--muted);
+}
+.line-list li:last-child{border-bottom:0}
+.amt{
+  font-family:"IBM Plex Mono",monospace;
+  white-space:nowrap;
+}
+.scheduled{
+  font-size:9px;
+  color:var(--gold);
+  border:1px solid rgba(215,179,106,.30);
+  padding:1px 5px;
+  border-radius:999px;
+}
+.icon-btn{
+  border:0;
+  background:transparent;
+  color:#666;
+  padding:2px 3px;
+  font-size:13px;
+}
+.icon-btn:hover{color:var(--red)}
+.empty-note{font-size:11px;color:#666;margin:0}
+
+.month-selector-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:8px;
+  margin-bottom:14px;
+}
+.month-select-card{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:12px;
+  padding:11px 10px;
+  text-align:left;
+  min-height:72px;
+  transition:.16s ease;
+}
+.month-select-card:hover{border-color:#505050;transform:translateY(-1px)}
+.month-select-card.active{border-color:var(--text);background:#161616}
+.month-select-card .m-name{display:block;font-size:12px;font-weight:500;margin-bottom:6px}
+.month-select-card .m-balance{display:block;font-family:"IBM Plex Mono",monospace;font-size:10px}
+.month-select-card .m-flow{display:flex;gap:7px;margin-top:5px;font-size:9px;color:var(--muted)}
+.movement-focus-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);
+  gap:12px;
+  align-items:start;
+}
+.movement-focus-card,.movement-chart-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+.movement-focus-card{min-height:420px}
+.movement-neutral{
+  min-height:385px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  gap:7px;
+  color:var(--muted);
+}
+.movement-neutral strong{color:var(--text);font-size:15px}
+.movement-neutral span{font-size:12px;max-width:330px}
+.neutral-icon{
+  width:46px;height:46px;border:1px solid var(--line2);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:4px;color:#666;
+}
+.focus-head{
+  display:flex;justify-content:space-between;gap:15px;align-items:flex-end;
+  padding-bottom:13px;border-bottom:1px solid var(--line);margin-bottom:14px;
+}
+.focus-head h3,.movement-chart-head h3{margin:0;font-size:20px;font-weight:500}
+.focus-balance{text-align:right}
+.focus-balance span{
+  display:block;color:var(--muted);font-size:10px;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:4px
+}
+.focus-balance b{font-family:"IBM Plex Mono",monospace;font-size:17px}
+.movement-two-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.movement-side{border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.movement-side-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+.movement-side-head h4{margin:0;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.income-side .movement-side-head h4,.income-side .movement-side-head span{color:var(--green)}
+.expense-side .movement-side-head h4,.expense-side .movement-side-head span{color:var(--red)}
+.movement-side-head span{font-family:"IBM Plex Mono",monospace;font-size:11px}
+.quick-add{display:grid;grid-template-columns:1fr 86px 38px;gap:6px;margin-bottom:9px}
+.quick-add .field{padding:8px 9px;font-size:11px}
+.quick-add .btn{padding:7px 8px}
+.editable-list{display:flex;flex-direction:column;gap:6px}
+.editable-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 94px auto;
+  gap:6px;align-items:center;padding:6px;border:1px solid var(--line);
+  border-radius:9px;background:#0a0a0a;
+}
+.editable-row.auto-row{grid-template-columns:minmax(0,1fr) auto;opacity:.72}
+.inline-edit{
+  width:100%;min-width:0;border:1px solid transparent;background:transparent;color:var(--text);
+  border-radius:6px;padding:5px 6px;outline:none;font-size:11px;
+}
+.inline-edit:hover,.inline-edit:focus{border-color:var(--line2);background:#101010}
+.inline-edit.money{text-align:right;font-family:"IBM Plex Mono",monospace}
+.row-actions{display:flex;align-items:center;gap:2px;white-space:nowrap}
+.order-btn{border:0;background:transparent;color:#777;padding:3px 4px;font-size:12px}
+.order-btn:hover{color:var(--text)}
+.order-btn:disabled{opacity:.2;cursor:default}
+.delete-mini:hover{color:var(--red)}
+.auto-text{font-size:11px;color:var(--muted)}
+.movement-chart-card{position:sticky;top:12px}
+.movement-chart-head{margin-bottom:4px}
+.movement-donut-wrap{position:relative;max-width:310px;aspect-ratio:1;margin:4px auto 8px}
+#movementDonutSvg{width:100%;height:100%;display:block}
+.movement-donut-center{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:126px;height:126px;border-radius:50%;background:#0a0a0a;border:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;
+}
+.movement-donut-center span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.movement-donut-center b{font-family:"IBM Plex Mono",monospace;font-size:15px;margin:5px 0 3px}
+.movement-donut-center small{font-size:9px;color:var(--muted)}
+.movement-chart-legend{display:flex;flex-direction:column;gap:6px}
+.movement-legend-row{
+  display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;
+  border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:10px;color:var(--muted);
+}
+.movement-legend-row strong{color:var(--text);font-family:"IBM Plex Mono",monospace;font-size:10px}
+.editable-table-input{
+  width:100%;min-width:80px;background:transparent;border:1px solid transparent;color:var(--text);
+  border-radius:6px;padding:5px 6px;outline:none;
+}
+.editable-table-input:hover,.editable-table-input:focus{border-color:var(--line2);background:#111}
+.editable-table-input.amount{text-align:right;font-family:"IBM Plex Mono",monospace}
+.table-actions{display:flex;justify-content:flex-end;align-items:center;gap:2px}
+
+.rule-form{
+  display:grid;
+  grid-template-columns:1.35fr .75fr .9fr .75fr .75fr .7fr .7fr auto;
+  gap:8px;
+  margin-bottom:12px;
+}
+.programmed-inside{
+  margin-top:34px;
+  padding-top:28px;
+  border-top:1px solid var(--line2);
+}
+.inline-programmed-head{
+  margin-top:0;
+}
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  font-size:12px;
+}
+th,td{
+  padding:10px 11px;
+  text-align:left;
+  border-bottom:1px solid var(--line);
+}
+th{
+  background:var(--panel2);
+  color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+tr:last-child td{border-bottom:0}
+td.num{
+  text-align:right;
+  font-family:"IBM Plex Mono",monospace;
+  white-space:nowrap;
+}
+tr.total td{
+  border-top:1px solid var(--line2);
+  background:#101010;
+  font-weight:600;
+}
+.badge{
+  display:inline-block;
+  padding:2px 6px;
+  border-radius:999px;
+  font-size:9px;
+  font-family:"IBM Plex Mono",monospace;
+  border:1px solid var(--line2);
+}
+.badge.monthly{color:var(--blue)}
+.badge.annual{color:var(--gold)}
+.badge.installment{color:var(--red)}
+.flow-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.flow-box h4{
+  margin:0 0 8px;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-family:"IBM Plex Mono",monospace;
+}
+.flow-box.in h4{color:var(--green)}
+.flow-box.out h4{color:var(--red)}
+.balance-banner{
+  margin-top:12px;
+  background:var(--panel);
+  border:1px solid var(--line2);
+  border-radius:14px;
+  padding:14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  box-shadow:var(--shadow);
+}
+.balance-banner .label{font-size:12px;color:var(--muted)}
+.balance-banner .value{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:20px;
+  color:var(--gold);
+}
+.note-box{
+  margin-top:10px;
+  padding:10px 12px;
+  border-left:2px solid var(--line2);
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.55;
+}
+footer{
+  margin-top:34px;
+  border-top:1px solid var(--line);
+  padding-top:16px;
+  text-align:center;
+  color:#5c5c5c;
+  font-size:10px;
+  font-family:"IBM Plex Mono",monospace;
+}
+@media(max-width:1060px){
+  .donut-layout{grid-template-columns:1fr}
+  .chart-wrap{grid-template-columns:1fr}
+}
+@media(max-width:920px){
+  .month-selector-grid{grid-template-columns:repeat(4,1fr)}
+  .movement-focus-layout{grid-template-columns:1fr}
+  .movement-chart-card{position:static}
+  .month-grid{grid-template-columns:repeat(2,1fr)}
+  .toolbar{grid-template-columns:1.2fr .8fr .8fr;}.toolbar .wide-btn{grid-column:span 3}
+  .rule-form{grid-template-columns:1fr 1fr 1fr}
+  .rule-form .wide-btn{grid-column:span 3}
+}
+@media(max-width:760px){
+  .month-selector-grid{grid-template-columns:repeat(3,1fr)}
+  .movement-two-cols{grid-template-columns:1fr}
+  .screen-nav{grid-template-columns:repeat(2,1fr)}
+  .grid-3,.flow-cols,.month-grid{grid-template-columns:1fr}
+  .toolbar,.rule-form{grid-template-columns:1fr 1fr}
+  .toolbar .wide-btn,.rule-form .wide-btn{grid-column:span 2}
+  .donut-box{width:280px;height:280px}
+  #donutSvg{width:280px;height:280px}
+  .donut-center{width:130px;height:130px}
+}
+@media(max-width:520px){
+  .month-selector-grid{grid-template-columns:repeat(2,1fr)}
+  .quick-add{grid-template-columns:1fr 78px 36px}
+  .editable-row{grid-template-columns:minmax(0,1fr) 82px auto}
+  body{padding:16px 10px 50px}
+  .screen-nav{grid-template-columns:1fr}
+  .top-right{width:100%;justify-content:space-between}
+  .year-select{flex:1}
+}
+@media print{
+  body{background:#fff;color:#111;padding:0}
+  .screen-nav,.toolbar,.rule-form,.icon-btn,.btn,.note-box{display:none!important}
+  .screen{display:block!important}
+  .chart-card,.legend-card,.stat-card,.month-card,table,.balance-banner{
+    background:#fff;color:#111;border-color:#ccc;box-shadow:none;
+  }
+  .sub,.stat-note,.stat-label,th,footer,.eyebrow,.legend-meta,.center-sub{color:#555}
+  .legend-item,.nav-card{border-color:#ddd;background:#fff;box-shadow:none}
+}
+
+.quick-add-category{grid-template-columns:1fr 105px 82px 38px}
+.editable-row.with-category{grid-template-columns:minmax(0,1fr) 102px 90px auto}
+.inline-edit.category{color:var(--gold)}
+.recurring-details,.accounts-balance-details{
+  margin-top:16px;background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;overflow:hidden;box-shadow:var(--shadow)
+}
+.recurring-details summary,.accounts-balance-details summary{
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:15px;
+  padding:16px 17px;cursor:pointer;background:#0d0d0d
+}
+.recurring-details summary::-webkit-details-marker,.accounts-balance-details summary::-webkit-details-marker{display:none}
+.recurring-details summary strong,.accounts-balance-details summary strong{display:block;font-size:13px;margin-bottom:4px}
+.recurring-details summary span:not(.summary-arrow),.accounts-balance-details summary span:not(.summary-arrow){display:block;color:var(--muted);font-size:10.5px}
+.summary-arrow{font-size:20px;color:var(--muted);transition:.15s ease}
+details[open] .summary-arrow{transform:rotate(180deg)}
+.recurring-body,.accounts-balance-body{padding:16px;border-top:1px solid var(--line)}
+.recurring-form{display:grid;grid-template-columns:1.25fr 1fr .75fr .85fr .7fr;gap:8px}
+.months-pick-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:16px 0 8px;font-size:11px;color:var(--muted)}
+.months-pick-head b{color:var(--text);font-family:"IBM Plex Mono",monospace;font-size:10px}
+.months-check-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.month-check{position:relative}
+.month-check input{position:absolute;opacity:0;pointer-events:none}
+.month-check label{
+  display:block;border:1px solid var(--line);background:#0a0a0a;border-radius:8px;
+  padding:8px 6px;text-align:center;font-size:10px;color:var(--muted);cursor:pointer
+}
+.month-check input:checked+label{background:#191919;color:var(--text);border-color:#666}
+.compact-row{display:flex;align-items:center;gap:10px;margin-top:14px}
+.mini-label{display:block;color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.installment-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+.rule-create-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin:12px 0}
+.rule-create-row .note-box{margin:0;flex:1}
+.period-filter{
+  display:flex;gap:7px;align-items:center;overflow-x:auto;padding-bottom:4px;margin-bottom:12px
+}
+.period-btn{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  border-radius:9px;padding:8px 10px;font-size:10px
+}
+.period-btn.active{background:var(--text);color:#050505;border-color:var(--text);font-weight:600}
+.period-months{display:flex;gap:5px}
+.liquidity-kpis{margin-bottom:12px}
+.category-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:12px}
+.category-panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:var(--shadow)}
+.category-panel-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:11px}
+.category-panel-head h3{margin:0;font-size:16px;font-weight:500}
+.category-hint{color:var(--muted);font-size:9.5px}
+.category-list{display:flex;flex-direction:column;gap:7px}
+.category-group{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#0a0a0a}
+.category-row{
+  width:100%;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+  border:0;background:transparent;color:var(--text);padding:10px 11px;text-align:left
+}
+.category-row:hover{background:#111}
+.category-name{font-size:11.5px;font-weight:500}
+.category-share{font-size:9px;color:var(--muted)}
+.category-total{font-family:"IBM Plex Mono",monospace;font-size:11px}
+.category-chevron{color:#666;font-size:11px}
+.category-detail{display:none;border-top:1px solid var(--line);padding:5px 10px 8px}
+.category-group.open .category-detail{display:block}
+.category-group.open .category-chevron{transform:rotate(180deg)}
+.subexpense{
+  display:grid;grid-template-columns:66px 1fr auto;gap:8px;align-items:center;
+  padding:6px 0;border-bottom:1px solid #1d1d1d;font-size:10.5px;color:var(--muted)
+}
+.subexpense:last-child{border-bottom:0}
+.subexpense .sub-month{font-family:"IBM Plex Mono",monospace;font-size:9px;color:#6e6e6e}
+.subexpense .sub-amount{font-family:"IBM Plex Mono",monospace;color:var(--text)}
+.investment-form{display:grid;grid-template-columns:1.15fr .8fr .7fr .7fr 1fr auto;gap:8px;margin-bottom:12px}
+.liquidity-toolbar{grid-template-columns:1.4fr .8fr 1fr auto}
+
+@media(max-width:980px){
+  .recurring-form{grid-template-columns:1fr 1fr 1fr}
+  .category-layout{grid-template-columns:1fr}
+  .investment-form{grid-template-columns:1fr 1fr 1fr}
+  .investment-form .btn{grid-column:span 3}
+}
+@media(max-width:760px){
+  .quick-add-category{grid-template-columns:1fr 95px 76px 36px}
+  .months-check-grid{grid-template-columns:repeat(4,1fr)}
+  .installment-grid{grid-template-columns:1fr}
+  .rule-create-row{flex-direction:column;align-items:stretch}
+}
+@media(max-width:520px){
+  .quick-add-category{grid-template-columns:1fr 1fr 80px 36px}
+  .months-check-grid{grid-template-columns:repeat(3,1fr)}
+  .recurring-form,.investment-form{grid-template-columns:1fr 1fr}
+  .investment-form .btn{grid-column:span 2}
+  .editable-row.with-category{grid-template-columns:minmax(0,1fr) 86px 80px auto}
+}
+
+/* FIX layout mese selezionato: evita qualsiasi sovrapposizione */
+.movement-focus-layout{
+  grid-template-columns:minmax(0,1.7fr) minmax(280px,.65fr);
+}
+.movement-focus-card,
+.movement-chart-card,
+.movement-two-cols,
+.movement-side,
+.quick-add-category,
+.editable-row.with-category{
+  min-width:0;
+}
+.movement-two-cols{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+}
+.movement-side{
+  overflow:hidden;
+}
+
+/* Inserimento nuovo movimento su due righe, più stabile */
+.quick-add-category{
+  grid-template-columns:minmax(0,1fr) 110px 40px;
+  grid-template-areas:
+    "desc category category"
+    "amount amount add";
+  gap:6px;
+}
+.quick-add-category > *{min-width:0}
+.quick-add-category > :nth-child(1){grid-area:desc}
+.quick-add-category > :nth-child(2){grid-area:category}
+.quick-add-category > :nth-child(3){grid-area:amount}
+.quick-add-category > :nth-child(4){grid-area:add}
+.quick-add-category .amount-field{
+  width:100%;
+}
+
+/* Ogni movimento è su due righe:
+   descrizione sopra, categoria/importo/comandi sotto */
+.editable-row.with-category{
+  grid-template-columns:minmax(0,1fr) 92px auto;
+  grid-template-areas:
+    "desc desc desc"
+    "category money actions";
+  gap:5px 6px;
+  align-items:center;
+}
+.editable-row.with-category > *{min-width:0}
+.editable-row.with-category > :nth-child(1){grid-area:desc}
+.editable-row.with-category > .category{grid-area:category}
+.editable-row.with-category > .money{grid-area:money}
+.editable-row.with-category > .row-actions{grid-area:actions}
+
+.editable-row.with-category .inline-edit{
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.editable-row.with-category .money{
+  width:92px;
+  max-width:92px;
+}
+.editable-row.with-category .row-actions{
+  justify-self:end;
+}
+
+/* Anche le righe automatiche possono andare a capo senza invadere l'importo */
+.editable-row.auto-row{
+  grid-template-columns:minmax(0,1fr) auto;
+}
+.auto-text{
+  min-width:0;
+  overflow-wrap:anywhere;
+  line-height:1.35;
+}
+
+/* Il titolo e il saldo del mese non si comprimono uno sull'altro */
+.focus-head > div:first-child{min-width:0}
+.focus-head h3{
+  overflow-wrap:anywhere;
+}
+.focus-balance{
+  flex:0 0 auto;
+}
+
+/* Su schermi medi mantieni grafico di lato, ma apri Entrate/Uscite verticalmente */
+@media(max-width:1080px){
+  .movement-focus-layout{
+    grid-template-columns:minmax(0,1fr) 300px;
+  }
+  .movement-two-cols{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:860px){
+  .movement-focus-layout{
+    grid-template-columns:1fr;
+  }
+  .movement-chart-card{
+    position:static;
+  }
+}
+@media(max-width:520px){
+  .quick-add-category{
+    grid-template-columns:minmax(0,1fr) 38px;
+    grid-template-areas:
+      "desc desc"
+      "category category"
+      "amount add";
+  }
+  .editable-row.with-category{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:
+      "desc desc"
+      "category category"
+      "money actions";
+  }
+  .editable-row.with-category .money{
+    width:100%;
+    max-width:none;
+  }
+}
+
+
+/* Simbolo € visibile dentro tutti i campi monetari */
+.amount-field,
+.inline-edit.money,
+.editable-table-input.amount,
+#ruleAmount,
+#liqAmount,
+#invCapital{
+  padding-left:25px !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ctext x='3' y='13' font-size='12' font-family='Arial' fill='%238d8d8d'%3E%E2%82%AC%3C/text%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:7px center;
+  background-size:16px 16px;
+}
+
+/* I campi percentuali e numerici non monetari restano senza € */
+#invRate,
+#invTax,
+#ruleInstallments,
+#ruleDuration{
+  background-image:none !important;
+  padding-left:inherit;
+}
+
+
+.grid-4{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.stat-card.investment:before{background:var(--gold)}
+.stat-card.balance:before{background:var(--blue)}
+.summary-liquidity-block{
+  margin-top:42px;
+  padding-top:30px;
+  border-top:1px solid var(--line2);
+}
+.summary-liquidity-block .section-head{margin-bottom:10px}
+.personal-totals{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:12px;
+}
+.personal-count-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.personal-table-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:15px;
+  box-shadow:var(--shadow);
+  min-width:0;
+}
+.personal-card-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-end;
+  margin-bottom:11px;
+}
+.personal-card-head h3{
+  margin:0;
+  font-size:16px;
+  font-weight:500;
+}
+.personal-card-head > span{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:13px;
+  white-space:nowrap;
+}
+.personal-add-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 125px 40px;
+  gap:7px;
+  margin-bottom:10px;
+}
+.personal-add-row > *{min-width:0}
+.personal-final-banner{
+  margin-top:12px;
+  border:1px solid var(--line2);
+  background:linear-gradient(180deg,#141414,#0d0d0d);
+  border-radius:16px;
+  padding:17px 19px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  box-shadow:var(--shadow);
+}
+.personal-final-banner span{
+  display:block;
+  color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:9px;
+  letter-spacing:.09em;
+  margin-bottom:5px;
+}
+.personal-final-banner strong{font-size:12px;font-weight:500}
+.personal-final-banner > b{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:24px;
+  color:var(--gold);
+  white-space:nowrap;
+}
+.personal-money{
+  padding-left:25px !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ctext x='3' y='13' font-size='12' font-family='Arial' fill='%238d8d8d'%3E%E2%82%AC%3C/text%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:7px center;
+  background-size:16px 16px;
+}
+@media(max-width:980px){
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .personal-totals{grid-template-columns:1fr}
+  .personal-count-grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .grid-4{grid-template-columns:1fr}
+  .personal-add-row{grid-template-columns:minmax(0,1fr) 100px 38px}
+  .personal-final-banner{align-items:flex-start;flex-direction:column}
+}
+
+
+/* Nome mese e saldo affiancati con la stessa evidenza */
+.month-select-card .m-topline{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:7px;
+}
+.month-select-card .m-name,
+.month-select-card .m-balance{
+  display:inline-block;
+  margin:0;
+  font-size:12px;
+  font-weight:500;
+  line-height:1.2;
+}
+.month-select-card .m-balance{
+  font-family:"IBM Plex Mono",monospace;
+  text-align:right;
+  white-space:nowrap;
+}
+.month-select-card .m-flow{
+  margin-top:0;
+}
+
+
+#invTax{
+  padding-right:24px !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Ctext x='3' y='13' font-size='11' font-family='Arial' fill='%238d8d8d'%3E%25%3C/text%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;
+  background-position:right 6px center !important;
+  background-size:15px 15px !important;
+}
+
+
+.percent-input-wrap{
+  position:relative;
+  display:inline-block;
+  width:100%;
+}
+.percent-input-wrap input{
+  padding-right:20px !important;
+}
+.percent-input-wrap span{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+  font-size:10px;
+  pointer-events:none;
+}
+
+
+.category-create-wrap{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 32px;
+  gap:5px;
+  min-width:0;
+}
+.category-create-wrap .field{min-width:0}
+.category-add-btn{
+  border:1px solid var(--line2);
+  background:#151515;
+  color:var(--text);
+  border-radius:8px;
+  font-size:16px;
+  line-height:1;
+  padding:0;
+}
+.category-add-btn:hover{background:#202020}
+
+
+.investment-month-detail{
+  margin-top:12px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+}
+.investment-detail-empty{
+  padding:14px;
+  color:var(--muted);
+  font-size:11px;
+}
+.investment-detail-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:13px 14px;
+  border-bottom:1px solid var(--line);
+}
+.investment-detail-head h3{margin:0;font-size:14px;font-weight:500}
+.investment-detail-head span{font-size:10px;color:var(--muted)}
+.month-interest-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  padding:10px;
+}
+.month-interest-card{
+  border:1px solid var(--line);
+  background:#0a0a0a;
+  border-radius:10px;
+  padding:9px;
+}
+.month-interest-card .mi-month{
+  display:flex;justify-content:space-between;gap:8px;
+  font-size:10px;font-weight:500;margin-bottom:6px
+}
+.month-interest-card .mi-row{
+  display:flex;justify-content:space-between;gap:8px;
+  padding:2px 0;font-size:9px;color:var(--muted)
+}
+.month-interest-card .mi-row b{
+  color:var(--text);font-family:"IBM Plex Mono",monospace;font-weight:500
+}
+.month-interest-card .mi-row.gain b{color:var(--green)}
+.investment-detail-btn{
+  border:1px solid var(--line2);
+  background:#131313;
+  color:var(--text);
+  border-radius:7px;
+  padding:5px 7px;
+  font-size:9px;
+}
+@media(max-width:760px){
+  .month-interest-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:520px){
+  .month-interest-grid{grid-template-columns:1fr}
+}
+
+
+/* =========================================
+   MOBILE APP PREVIEW
+   ========================================= */
+.mobile-quick-screen,
+.mobile-bottom-nav{
+  display:none;
+}
+
+@media(max-width:760px){
+  body{
+    padding:14px 10px 90px;
+  }
+
+  .sheet{
+    max-width:100%;
+  }
+
+  header{
+    margin-bottom:12px;
+    padding-bottom:12px;
+    align-items:center;
+  }
+
+  header .eyebrow{
+    display:none;
+  }
+
+  header h1{
+    font-size:22px;
+    letter-spacing:-.03em;
+  }
+
+  .top-right{
+    width:auto;
+    margin-left:auto;
+  }
+
+  .top-right .btn{
+    display:none;
+  }
+
+  .year-select{
+    min-width:88px;
+    padding:8px 10px;
+    border-radius:9px;
+    font-size:12px;
+  }
+
+  /* La navigazione desktop sparisce sul telefono */
+  .screen-nav{
+    display:none !important;
+  }
+
+  .mobile-quick-screen{
+    display:none;
+  }
+  .mobile-quick-screen.active{
+    display:block;
+  }
+
+  .mobile-quick-shell{
+    max-width:560px;
+    margin:0 auto;
+  }
+
+  .mobile-quick-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    margin-bottom:14px;
+  }
+
+  .mobile-quick-head .eyebrow{
+    display:block;
+    margin-bottom:5px;
+  }
+
+  .mobile-quick-head h2{
+    font-size:24px;
+    line-height:1.05;
+  }
+
+  .quick-current-period{
+    flex:0 0 auto;
+    color:var(--muted);
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;
+    padding:7px 9px;
+    border:1px solid var(--line);
+    border-radius:8px;
+  }
+
+  .quick-type-toggle{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:12px;
+  }
+
+  .quick-type-btn{
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--muted);
+    border-radius:14px;
+    padding:13px 10px;
+    font-weight:600;
+    font-size:14px;
+  }
+
+  .quick-type-btn span{
+    font-family:"IBM Plex Mono",monospace;
+    margin-right:5px;
+  }
+
+  .quick-type-btn.active.out{
+    color:var(--red);
+    border-color:rgba(255,123,114,.55);
+    background:rgba(255,123,114,.08);
+  }
+
+  .quick-type-btn.active.in{
+    color:var(--green);
+    border-color:rgba(103,214,150,.55);
+    background:rgba(103,214,150,.08);
+  }
+
+  .quick-amount-wrap{
+    position:relative;
+    display:flex;
+    align-items:center;
+    background:#090909;
+    border:1px solid var(--line2);
+    border-radius:18px;
+    min-height:104px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+
+  .quick-euro{
+    position:absolute;
+    left:18px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--muted);
+    font-family:"IBM Plex Mono",monospace;
+    font-size:27px;
+    pointer-events:none;
+  }
+
+  .quick-amount-input{
+    width:100%;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:var(--text);
+    font-family:"IBM Plex Mono",monospace;
+    font-size:44px;
+    font-weight:500;
+    letter-spacing:-.05em;
+    padding:18px 16px 18px 50px;
+  }
+
+  .quick-amount-input::placeholder{
+    color:#3c3c3c;
+  }
+
+  .quick-fields{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .quick-main-field{
+    min-height:48px;
+  }
+
+  .quick-period-grid{
+    display:grid;
+    grid-template-columns:1.4fr .8fr;
+    gap:8px;
+  }
+
+  .quick-save-btn{
+    width:100%;
+    border:0;
+    background:var(--text);
+    color:#050505;
+    border-radius:14px;
+    padding:14px 16px;
+    margin-top:12px;
+    font-weight:700;
+    font-size:14px;
+  }
+
+  .quick-save-btn:active{
+    transform:scale(.99);
+  }
+
+  .quick-feedback{
+    min-height:20px;
+    margin-top:8px;
+    text-align:center;
+    font-size:11px;
+    color:var(--green);
+  }
+
+  .quick-month-summary{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:10px;
+  }
+
+  .quick-month-summary > div{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 9px;
+    min-width:0;
+  }
+
+  .quick-month-summary span{
+    display:block;
+    color:var(--muted);
+    font-size:8.5px;
+    margin-bottom:5px;
+  }
+
+  .quick-month-summary b{
+    display:block;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .quick-last-title{
+    margin:17px 0 8px;
+    color:var(--muted);
+    font-size:9px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+
+  .quick-recent-list{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .quick-recent-row{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px;
+    align-items:center;
+    padding:10px 11px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:11px;
+  }
+
+  .quick-recent-row .qr-desc{
+    min-width:0;
+  }
+
+  .quick-recent-row .qr-desc strong{
+    display:block;
+    font-size:11px;
+    font-weight:500;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .quick-recent-row .qr-desc span{
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    margin-top:3px;
+  }
+
+  .quick-recent-row .qr-amount{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;
+    white-space:nowrap;
+  }
+
+  /* Bottom navigation */
+  .mobile-bottom-nav{
+    position:fixed;
+    z-index:9999;
+    left:8px;
+    right:8px;
+    bottom:max(8px,env(safe-area-inset-bottom));
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:4px;
+    padding:6px;
+    background:rgba(12,12,12,.96);
+    border:1px solid var(--line2);
+    border-radius:18px;
+    box-shadow:0 10px 35px rgba(0,0,0,.55);
+    backdrop-filter:blur(16px);
+  }
+
+  .mobile-nav-btn{
+    border:0;
+    background:transparent;
+    color:#6f6f6f;
+    border-radius:12px;
+    padding:7px 2px 6px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    font-size:8.5px;
+    min-width:0;
+  }
+
+  .mobile-nav-btn.active{
+    color:var(--text);
+    background:#191919;
+  }
+
+  .mobile-nav-icon{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:16px;
+    line-height:1;
+  }
+
+  /* Le schermate normali diventano più da app */
+  .screen:not(.mobile-quick-screen){
+    padding-bottom:6px;
+  }
+
+  .section-head{
+    margin-bottom:10px;
+  }
+
+  .section-title h2{
+    font-size:18px;
+  }
+
+  .sub{
+    margin-bottom:12px;
+  }
+
+  .chart-wrap,
+  .category-layout,
+  .personal-count-grid,
+  .grid-4,
+  .grid-3{
+    gap:8px;
+  }
+
+  .stat-card{
+    border-radius:12px;
+    padding:13px;
+  }
+
+  .stat-value{
+    font-size:20px;
+  }
+
+  /* Tabelle: scroll orizzontale invece di schiacciarle */
+  table{
+    min-width:680px;
+  }
+
+  .category-panel table,
+  .personal-table-card table{
+    min-width:520px;
+  }
+
+  .personal-table-card,
+  .investment-month-detail,
+  .chart-card,
+  .legend-card,
+  .category-panel{
+    overflow-x:auto;
+  }
+
+  .investment-form{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .investment-form .btn{
+    grid-column:span 2;
+  }
+}
+
+
+@media(max-width:760px){
+  .mobile-month-home{
+    max-width:560px;
+    margin:0 auto;
+  }
+
+  .mobile-month-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    margin-bottom:12px;
+  }
+
+  .mobile-month-head .eyebrow{
+    display:block;
+    margin-bottom:5px;
+  }
+
+  .mobile-month-head h2{
+    margin:0;
+    font-size:28px;
+    line-height:1;
+    letter-spacing:-.04em;
+  }
+
+  .mobile-month-balance{
+    text-align:right;
+    flex:0 0 auto;
+  }
+
+  .mobile-month-balance span{
+    display:block;
+    color:var(--muted);
+    font-size:8px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin-bottom:4px;
+  }
+
+  .mobile-month-balance b{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:16px;
+  }
+
+  .mobile-month-totals{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:9px;
+  }
+
+  .mobile-total-card{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:13px;
+    padding:12px;
+  }
+
+  .mobile-total-card span{
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    margin-bottom:5px;
+  }
+
+  .mobile-total-card b{
+    display:block;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:15px;
+  }
+
+  .mobile-total-card.in b{color:var(--green)}
+  .mobile-total-card.out b{color:var(--red)}
+
+  .mobile-add-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:13px;
+  }
+
+  .mobile-add-btn{
+    min-height:56px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    font-size:13px;
+    font-weight:600;
+  }
+
+  .mobile-add-btn span{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:18px;
+  }
+
+  .mobile-add-btn.income{
+    border:1px solid rgba(103,214,150,.5);
+    background:rgba(103,214,150,.08);
+    color:var(--green);
+  }
+
+  .mobile-add-btn.expense{
+    border:1px solid rgba(255,123,114,.5);
+    background:rgba(255,123,114,.08);
+    color:var(--red);
+  }
+
+  .mobile-month-columns{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+
+  .mobile-list-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:11px;
+  }
+
+  .mobile-list-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:7px;
+  }
+
+  .mobile-list-head h3{
+    margin:0;
+    font-size:12px;
+    font-weight:600;
+  }
+
+  .income-list-card .mobile-list-head h3{color:var(--green)}
+  .expense-list-card .mobile-list-head h3{color:var(--red)}
+
+  .mobile-list-head span{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#151515;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:8px;
+  }
+
+  .mobile-home-list{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+
+  .mobile-home-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:8px;
+    align-items:center;
+    border-top:1px solid #1d1d1d;
+    padding:8px 1px 4px;
+  }
+
+  .mobile-home-row:first-child{
+    border-top:0;
+    padding-top:2px;
+  }
+
+  .mobile-home-row .mh-text{
+    min-width:0;
+  }
+
+  .mobile-home-row .mh-text strong{
+    display:block;
+    font-size:11px;
+    font-weight:500;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .mobile-home-row .mh-text span{
+    display:block;
+    margin-top:2px;
+    color:var(--muted);
+    font-size:8.5px;
+  }
+
+  .mobile-home-row .mh-amount{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;
+    white-space:nowrap;
+  }
+
+  .mobile-list-empty{
+    color:#606060;
+    font-size:10px;
+    padding:5px 0;
+  }
+
+  /* Bottom sheet */
+  .mobile-add-sheet{
+    position:fixed;
+    inset:0;
+    z-index:12000;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+  }
+
+  .mobile-add-sheet.open{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .mobile-add-sheet-backdrop{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    backdrop-filter:blur(2px);
+  }
+
+  .mobile-add-sheet-panel{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    background:#0b0b0b;
+    border-top:1px solid var(--line2);
+    border-radius:22px 22px 0 0;
+    padding:8px 14px calc(18px + env(safe-area-inset-bottom));
+    transform:translateY(100%);
+    transition:transform .22s ease;
+    box-shadow:0 -20px 45px rgba(0,0,0,.55);
+  }
+
+  .mobile-add-sheet.open .mobile-add-sheet-panel{
+    transform:translateY(0);
+  }
+
+  .mobile-add-sheet-handle{
+    width:42px;
+    height:4px;
+    border-radius:999px;
+    background:#383838;
+    margin:0 auto 11px;
+  }
+
+  .mobile-add-sheet-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:10px;
+  }
+
+  .mobile-add-sheet-head .eyebrow{
+    display:block;
+    margin-bottom:4px;
+  }
+
+  .mobile-add-sheet-head h3{
+    margin:0;
+    font-size:19px;
+    font-weight:500;
+  }
+
+  .mobile-close-btn{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:#151515;
+    color:var(--muted);
+    font-size:18px;
+  }
+
+  .mobile-sheet-amount{
+    position:relative;
+    display:flex;
+    align-items:center;
+    border:1px solid var(--line2);
+    background:#080808;
+    border-radius:14px;
+    margin-bottom:8px;
+  }
+
+  .mobile-sheet-amount span{
+    position:absolute;
+    left:13px;
+    color:var(--muted);
+    font-family:"IBM Plex Mono",monospace;
+    font-size:20px;
+  }
+
+  .mobile-sheet-amount input{
+    width:100%;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:var(--text);
+    padding:13px 12px 13px 38px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:30px;
+  }
+
+  .mobile-add-period{
+    display:grid;
+    grid-template-columns:1.35fr .65fr;
+    gap:8px;
+    margin-top:8px;
+  }
+
+  .mobile-sheet-save{
+    width:100%;
+    border:0;
+    border-radius:13px;
+    margin-top:10px;
+    padding:13px;
+    background:var(--text);
+    color:#050505;
+    font-weight:700;
+    font-size:13px;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="sheet">
+<header>
+  <div class="title-wrap">
+    <p class="eyebrow">Registro personale · dashboard patrimonio</p>
+    <h1>Patrimonio</h1>
+  </div>
+  <div class="top-right">
+    <select id="yearSelect" class="year-select"></select>
+    <button class="btn" onclick="window.print()">Stampa</button>
+  </div>
+</header>
+
+<nav class="screen-nav" id="screenNav"></nav>
+
+
+
+<section class="screen mobile-quick-screen" data-screen="quick">
+  <div class="mobile-month-home">
+    <div class="mobile-month-head">
+      <div>
+        <p class="eyebrow">Mese corrente</p>
+        <h2 id="mobileHomeMonth">—</h2>
+      </div>
+      <div class="mobile-month-balance">
+        <span>Saldo</span>
+        <b id="mobileHomeBalance">€ 0</b>
+      </div>
+    </div>
+
+    <div class="mobile-month-totals">
+      <div class="mobile-total-card in">
+        <span>Entrate</span>
+        <b id="mobileHomeIncome">€ 0</b>
+      </div>
+      <div class="mobile-total-card out">
+        <span>Uscite</span>
+        <b id="mobileHomeExpense">€ 0</b>
+      </div>
+    </div>
+
+    <div class="mobile-add-actions">
+      <button class="mobile-add-btn income" onclick="openMobileAdd('in')">
+        <span>＋</span><strong>Entrata</strong>
+      </button>
+      <button class="mobile-add-btn expense" onclick="openMobileAdd('out')">
+        <span>＋</span><strong>Uscita</strong>
+      </button>
+    </div>
+
+    <div class="mobile-month-columns">
+      <div class="mobile-list-card income-list-card">
+        <div class="mobile-list-head">
+          <h3>Entrate</h3>
+          <span id="mobileIncomeCount">0</span>
+        </div>
+        <div id="mobileHomeIncomeList" class="mobile-home-list"></div>
+      </div>
+
+      <div class="mobile-list-card expense-list-card">
+        <div class="mobile-list-head">
+          <h3>Uscite</h3>
+          <span id="mobileExpenseCount">0</span>
+        </div>
+        <div id="mobileHomeExpenseList" class="mobile-home-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-add-sheet" id="mobileAddSheet">
+    <div class="mobile-add-sheet-backdrop" onclick="closeMobileAdd()"></div>
+    <div class="mobile-add-sheet-panel">
+      <div class="mobile-add-sheet-handle"></div>
+
+      <div class="mobile-add-sheet-head">
+        <div>
+          <p class="eyebrow" id="mobileAddKicker">Nuovo movimento</p>
+          <h3 id="mobileAddTitle">Aggiungi</h3>
+        </div>
+        <button class="mobile-close-btn" onclick="closeMobileAdd()">×</button>
+      </div>
+
+      <div class="mobile-sheet-amount">
+        <span>€</span>
+        <input id="mobileAddAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+      </div>
+
+      <input id="mobileAddDesc" class="field" placeholder="Descrizione">
+
+      <div class="category-create-wrap">
+        <input id="mobileAddCategory" class="field" list="expenseCategories" placeholder="Categoria">
+        <button class="category-add-btn" type="button" onclick="createMobileCategory()">+</button>
+      </div>
+
+      <div class="mobile-add-period">
+        <select id="mobileAddMonth"></select>
+        <select id="mobileAddYear"></select>
+      </div>
+
+      <button class="mobile-sheet-save" onclick="saveMobileMovement()">Salva movimento</button>
+      <div id="mobileAddFeedback" class="quick-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen active" data-screen="summary">
+  <div class="section-head">
+    <div class="section-title"><span class="section-num">1</span><h2>Resoconto annuale <span id="summaryYearLabel"></span></h2></div>
+  </div>
+  <p class="sub">Entrate, uscite, interessi netti dei conti e risparmio complessivo dell’anno selezionato.</p>
+
+  <div class="grid-4 annual-summary-grid">
+    <div class="stat-card in">
+      <p class="stat-label">Entrate</p>
+      <p class="stat-value" id="annualIncome">€ 0</p>
+      <p class="stat-note">Incassi registrati nei Movimenti</p>
+    </div>
+    <div class="stat-card out">
+      <p class="stat-label">Uscite</p>
+      <p class="stat-value" id="annualExpense">€ 0</p>
+      <p class="stat-note">Uscite manuali + programmate</p>
+    </div>
+    <div class="stat-card investment">
+      <p class="stat-label">Interessi conti</p>
+      <p class="stat-value" id="annualInvestmentGain">€ 0</p>
+      <p class="stat-note">Interessi netti annui calcolati</p>
+    </div>
+    <div class="stat-card balance">
+      <p class="stat-label">Risparmiato totale</p>
+      <p class="stat-value" id="annualBalance">€ 0</p>
+      <p class="stat-note">Entrate + interessi conti − uscite</p>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-card">
+      <div class="donut-layout">
+        <div class="donut-box">
+          <svg id="donutSvg" viewBox="0 0 320 320" aria-label="Grafico donut del resoconto annuale"></svg>
+          <div class="donut-center">
+            <div class="center-kicker" id="centerKicker">Risparmiato</div>
+            <div class="center-value" id="centerValue">€ 0</div>
+            <div class="center-sub" id="centerSub">saldo annuale totale</div>
+          </div>
+        </div>
+        <div class="chart-copy">
+          <h3>Flussi annuali</h3>
+          <p id="summaryInsight">Il grafico confronta entrate, uscite e interessi netti dei conti. Passa sui segmenti per vedere i valori.</p>
+        </div>
+      </div>
+    </div>
+    <div class="legend-card">
+      <h3>Dettaglio interattivo</h3>
+      <div class="legend-list" id="legendList"></div>
+      <div class="note-box">
+        Il valore al centro è il <strong>risparmio totale</strong>: entrate dei movimenti + interessi netti dei conti − uscite.
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-liquidity-block">
+    <div class="section-head">
+    <div class="section-title"><span class="section-num">1B</span><h2>Liquidità · rendiconto</h2></div>
+  </div>
+  <p class="sub">Rendiconto collegato direttamente ai Movimenti. Puoi vedere tutto l’anno o un singolo mese e aprire le categorie per visualizzare le sottospese.</p>
+
+  <div class="period-filter">
+    <button id="liqAllYearBtn" class="period-btn" onclick="selectLiquidityPeriod(null)">Tutto <span id="liqYearLabel"></span></button>
+    <div id="liqMonthFilters" class="period-months"></div>
+  </div>
+
+  <div class="grid-3 liquidity-kpis">
+    <div class="stat-card in"><p class="stat-label">Entrate periodo</p><p class="stat-value" id="liqIncomeTotal">€ 0</p><p class="stat-note" id="liqIncomeNote">—</p></div>
+    <div class="stat-card out"><p class="stat-label">Spese periodo</p><p class="stat-value" id="liqExpenseTotal">€ 0</p><p class="stat-note" id="liqExpenseNote">—</p></div>
+    <div class="stat-card balance"><p class="stat-label">Saldo periodo</p><p class="stat-value" id="liqNetTotal">€ 0</p><p class="stat-note" id="liqNetNote">—</p></div>
+  </div>
+
+  <div class="category-layout">
+    <div class="category-panel">
+      <div class="category-panel-head">
+        <div>
+          <p class="eyebrow" style="margin-bottom:5px;">Entrate</p>
+          <h3>Entrate per categoria</h3>
+        </div>
+        <span class="category-hint">Clicca una categoria per vedere il dettaglio</span>
+      </div>
+      <div id="incomeCategoryList" class="category-list"></div>
+    </div>
+
+    <div class="category-panel">
+      <div class="category-panel-head">
+        <div>
+          <p class="eyebrow" style="margin-bottom:5px;">Spese totali</p>
+          <h3>Spese per categoria</h3>
+        </div>
+        <span class="category-hint">Clicca una categoria per vedere le sottospese</span>
+      </div>
+      <div id="expenseCategoryList" class="category-list"></div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="movements">
+  <div class="section-head">
+    <div class="section-title"><span class="section-num">2</span><h2>Movimenti mensili</h2></div>
+  </div>
+  <p class="sub">I 12 mesi restano sempre visibili. Il mese selezionato apre entrate, uscite e grafico; ogni movimento ha una categoria che alimenta automaticamente il rendiconto Liquidità.</p>
+
+  <div class="month-selector-grid" id="monthSelectorGrid"></div>
+
+  <div class="movement-focus-layout">
+    <div class="movement-focus-card">
+      <div class="movement-neutral" id="movementNeutral">
+        <div class="neutral-icon">↗</div>
+        <strong>Seleziona un mese</strong>
+        <span>Clicca uno dei 12 mesi per aprire il dettaglio e aggiungere i movimenti.</span>
+      </div>
+
+      <div id="movementFocusedContent" style="display:none;">
+        <div class="focus-head">
+          <div>
+            <p class="eyebrow" style="margin-bottom:5px;">Mese selezionato</p>
+            <h3 id="focusedMonthTitle">—</h3>
+          </div>
+          <div class="focus-balance">
+            <span>Saldo</span>
+            <b id="focusedMonthBalance">€ 0</b>
+          </div>
+        </div>
+
+        <div class="movement-two-cols">
+          <div class="movement-side income-side">
+            <div class="movement-side-head">
+              <h4>Entrate</h4>
+              <span id="focusedIncomeTotal">€ 0</span>
+            </div>
+            <div class="quick-add quick-add-category">
+              <input id="focusInDesc" class="field" placeholder="Nuova entrata">
+              <div class="category-create-wrap">
+  <input id="focusInCategory" class="field" list="incomeCategories" placeholder="Categoria">
+  <button class="category-add-btn" type="button" title="Crea nuova categoria entrata" onclick="createCategory('in')">+</button>
+</div>
+              <input id="focusInAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="Importo">
+              <button class="btn primary" onclick="addFocusedMovement('in')">+</button>
+            </div>
+            <div class="editable-list" id="focusedIncomeList"></div>
+          </div>
+
+          <div class="movement-side expense-side">
+            <div class="movement-side-head">
+              <h4>Uscite</h4>
+              <span id="focusedExpenseTotal">€ 0</span>
+            </div>
+            <div class="quick-add quick-add-category">
+              <input id="focusOutDesc" class="field" placeholder="Nuova uscita">
+              <div class="category-create-wrap">
+  <input id="focusOutCategory" class="field" list="expenseCategories" placeholder="Categoria">
+  <button class="category-add-btn" type="button" title="Crea nuova categoria uscita" onclick="createCategory('out')">+</button>
+</div>
+              <input id="focusOutAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="Importo">
+              <button class="btn primary" onclick="addFocusedMovement('out')">+</button>
+            </div>
+            <div class="editable-list" id="focusedExpenseList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="movement-chart-card">
+      <div class="movement-chart-head">
+        <p class="eyebrow" style="margin-bottom:5px;">Grafico del mese</p>
+        <h3 id="movementChartMonth">Nessun mese selezionato</h3>
+      </div>
+      <div class="movement-donut-wrap">
+        <svg id="movementDonutSvg" viewBox="0 0 320 320" aria-label="Grafico entrate e uscite del mese"></svg>
+        <div class="movement-donut-center">
+          <span id="movementDonutLabel">Seleziona</span>
+          <b id="movementDonutValue">un mese</b>
+          <small id="movementDonutSub">grafico neutro</small>
+        </div>
+      </div>
+      <div class="movement-chart-legend" id="movementChartLegend"></div>
+    </div>
+  </div>
+
+  <details class="recurring-details" id="recurringDetails">
+    <summary>
+      <div>
+        <strong>Spese mensili e programmate</strong>
+        <span>Inserisci una spesa ripetuta, scegli esattamente i mesi e vedi quante volte verrà conteggiata.</span>
+      </div>
+      <span class="summary-arrow">⌄</span>
+    </summary>
+
+    <div class="recurring-body">
+      <div class="recurring-form">
+        <input id="ruleDesc" class="field" placeholder="Descrizione spesa">
+        <div class="category-create-wrap">
+  <input id="ruleCategory" class="field" list="expenseCategories" placeholder="Categoria (es. Casa)">
+  <button class="category-add-btn" type="button" title="Crea nuova categoria uscita" onclick="createCategory('out','ruleCategory')">+</button>
+</div>
+        <input id="ruleAmount" class="field" type="number" min="0" step="0.01" placeholder="Importo">
+        <select id="ruleType" onchange="updateRuleFields()">
+          <option value="recurring">Mesi scelti</option>
+          <option value="annual">Annuale</option>
+          <option value="installment">A rate</option>
+        </select>
+        <select id="ruleYear"></select>
+      </div>
+
+      <div id="recurringMonthsBlock">
+        <div class="months-pick-head">
+          <span>Quali mesi?</span>
+          <b id="selectedMonthsCount">0 mesi selezionati</b>
+        </div>
+        <div class="months-check-grid" id="ruleMonthsGrid"></div>
+      </div>
+
+      <div id="annualBlock" style="display:none;">
+        <div class="compact-row">
+          <span class="mini-label">Mese annuale</span>
+          <select id="ruleAnnualMonth"></select>
+        </div>
+      </div>
+
+      <div id="installmentBlock" style="display:none;">
+        <div class="installment-grid">
+          <div><span class="mini-label">Mese iniziale</span><select id="ruleStartMonth"></select></div>
+          <div><span class="mini-label">Numero rate</span><input id="ruleInstallments" class="field" type="number" min="2" max="60" step="1" placeholder="N. rate"></div>
+          <div><span class="mini-label">Durata totale</span><input id="ruleDuration" class="field" type="number" min="2" max="60" step="1" placeholder="Mesi"></div>
+        </div>
+      </div>
+
+      <div class="rule-create-row">
+        <div class="note-box" id="ruleHelp">Scegli i mesi: l'importo verrà inserito automaticamente solo nei mesi selezionati dell'anno indicato.</div>
+        <button class="btn primary" onclick="addRule()">+ Aggiungi spesa programmata</button>
+      </div>
+
+      <table class="rules-table">
+        <thead>
+          <tr>
+            <th>Spesa / categoria</th>
+            <th>Tipo</th>
+            <th>Periodo</th>
+            <th style="text-align:right">Importo</th>
+            <th style="text-align:right">Dettaglio</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rulesBody"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <datalist id="expenseCategories"></datalist>
+  <datalist id="incomeCategories"></datalist>
+</section>
+
+<section class="screen" data-screen="accounts">
+  <div class="section-head">
+    <div class="section-title"><span class="section-num">3</span><h2>Conti fruttiferi</h2></div>
+  </div>
+  <p class="sub">Aggiungi capitale, rendimento annuo e imposta. Il calcolo usa una capitalizzazione mensile: ogni mese l’interesse netto si aggiunge al capitale e il mese successivo riparte dal nuovo importo.</p>
+
+  <div class="investment-form">
+    <input id="invName" class="field" placeholder="Nome conto">
+    <input id="invCapital" class="field" type="number" min="0" step="0.01" placeholder="Capitale">
+    <input id="invRate" class="field" type="number" min="0" step="0.01" placeholder="Interesse %">
+    <input id="invTax" class="field" type="number" min="0" max="100" step="0.1" value="26" placeholder="Imposta %">
+    <input id="invNote" class="field" placeholder="Note">
+    <button class="btn primary" onclick="addInvestment()">+ Aggiungi</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Conto</th>
+        <th style="text-align:right">Capitale iniziale</th>
+        <th style="text-align:right">Interesse annuo</th>
+        <th style="text-align:right">Imposta %</th>
+        <th style="text-align:right">Interessi netti 12 mesi</th>
+        <th style="text-align:right">Capitale fine periodo</th>
+        <th>Note</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="investmentsBody"></tbody>
+    <tfoot>
+      <tr class="total">
+        <td>Totale</td>
+        <td class="num" id="invTotalCapital">€ 0</td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td class="num" id="invTotalNet">€ 0</td>
+        <td class="num" id="invTotalFinal">€ 0</td>
+        <td></td><td></td>
+      </tr>
+    </tfoot>
+  </table>
+  <div class="note-box">
+    Il capitale inserito viene trattato come capitale iniziale di un periodo di 12 mesi. Il modello è mensile: è una buona approssimazione per conti che accreditano interessi giornalmente, senza registrare centinaia di micro-movimenti.
+  </div>
+  <div class="investment-month-detail" id="investmentMonthDetail">
+    <div class="investment-detail-empty">Clicca <strong>12 mesi</strong> su un conto per vedere capitale iniziale, interesse netto e nuovo capitale mese per mese.</div>
+  </div>
+</section>
+
+
+<section class="screen" data-screen="personal">
+  <div class="section-head">
+    <div class="section-title"><span class="section-num">4</span><h2>Conteggi personali</h2></div>
+  </div>
+  <p class="sub">Un conteggio indipendente dal resoconto annuale: a sinistra inserisci i soldi che hai adesso, a destra le spese che prevedi. Il saldo finale si aggiorna automaticamente.</p>
+
+  <div class="personal-totals">
+    <div class="stat-card in">
+      <p class="stat-label">Disponibilità attuale</p>
+      <p class="stat-value" id="personalPositiveTotal">€ 0</p>
+      <p class="stat-note">Somma dei soldi disponibili adesso</p>
+    </div>
+    <div class="stat-card out">
+      <p class="stat-label">Spese previste</p>
+      <p class="stat-value" id="personalNegativeTotal">€ 0</p>
+      <p class="stat-note">Somma delle uscite che prevedi</p>
+    </div>
+    <div class="stat-card balance">
+      <p class="stat-label">Disponibilità finale</p>
+      <p class="stat-value" id="personalFinalTotal">€ 0</p>
+      <p class="stat-note">Disponibilità − spese previste</p>
+    </div>
+  </div>
+
+  <div class="personal-count-grid">
+    <div class="personal-table-card positive-card">
+      <div class="personal-card-head">
+        <div>
+          <p class="eyebrow" style="margin-bottom:5px;">Positivi</p>
+          <h3>Disponibilità sui conti</h3>
+        </div>
+        <span class="pos" id="personalPositiveHeader">€ 0</span>
+      </div>
+
+      <div class="personal-add-row">
+        <input id="pcInDesc" class="field" placeholder="Es. Revolut, contanti...">
+        <input id="pcInAmount" class="field personal-money" type="number" min="0" step="0.01" placeholder="Importo">
+        <button class="btn primary" onclick="addPersonal('in')">+</button>
+      </div>
+
+      <table>
+        <thead><tr><th>Disponibilità</th><th style="text-align:right">Importo</th><th></th></tr></thead>
+        <tbody id="personalInBody"></tbody>
+      </table>
+    </div>
+
+    <div class="personal-table-card negative-card">
+      <div class="personal-card-head">
+        <div>
+          <p class="eyebrow" style="margin-bottom:5px;">Negativi</p>
+          <h3>Spese previste</h3>
+        </div>
+        <span class="neg" id="personalNegativeHeader">€ 0</span>
+      </div>
+
+      <div class="personal-add-row">
+        <input id="pcOutDesc" class="field" placeholder="Es. tasse, assicurazione...">
+        <input id="pcOutAmount" class="field personal-money" type="number" min="0" step="0.01" placeholder="Importo">
+        <button class="btn primary" onclick="addPersonal('out')">+</button>
+      </div>
+
+      <table>
+        <thead><tr><th>Spesa prevista</th><th style="text-align:right">Importo</th><th></th></tr></thead>
+        <tbody id="personalOutBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="personal-final-banner">
+    <div>
+      <span>CONTEGGIO FINALE</span>
+      <strong>Disponibilità attuale − spese previste</strong>
+    </div>
+    <b id="personalFinalBanner">€ 0</b>
+  </div>
+</section>
+
+
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <button class="mobile-nav-btn active" data-target="quick" onclick="showScreen('quick')">
+    <span class="mobile-nav-icon">●</span><span>Mese</span>
+  </button>
+  <button class="mobile-nav-btn" data-target="summary" onclick="showScreen('summary')">
+    <span class="mobile-nav-icon">◔</span><span>Resoconto</span>
+  </button>
+  <button class="mobile-nav-btn" data-target="movements" onclick="showScreen('movements')">
+    <span class="mobile-nav-icon">≡</span><span>Movimenti</span>
+  </button>
+  <button class="mobile-nav-btn" data-target="accounts" onclick="showScreen('accounts')">
+    <span class="mobile-nav-icon">↗</span><span>Interessi</span>
+  </button>
+  <button class="mobile-nav-btn" data-target="personal" onclick="showScreen('personal')">
+    <span class="mobile-nav-icon">□</span><span>Conteggi</span>
+  </button>
+</nav>
+
+<footer>I dati vengono salvati automaticamente su questo browser tramite localStorage.</footer>
+</div>
+
+<script>
+const YEARS=[2026,2027,2028,2029,2030];
+const MONTHS=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const KEY="patrimonio_dashboard_tabs_v1";
+const SCREENS=[
+  {id:"summary",icon:"📊",label:"Resoconto"},
+  {id:"movements",icon:"🗓️",label:"Movimenti"},
+  {id:"accounts",icon:"💰",label:"Interessi conti"},
+  {id:"personal",icon:"📋",label:"Conteggi personali"}
+];
+
+const seed={
+  selectedYear:2026,
+  selectedMonth:null,
+  activeScreen:"summary",
+  movements:[
+    {id:1,year:2026,month:0,type:"in",desc:"Stipendio Netto Metka",category:"Stipendio",amount:2100},
+    {id:2,year:2026,month:0,type:"in",desc:"La SIA 1° Piano quotato",category:"Professione",amount:300},
+    {id:3,year:2026,month:0,type:"in",desc:"Ape Polito",category:"Professione",amount:70},
+    {id:4,year:2026,month:0,type:"in",desc:"Zappari Daniel",category:"Professione",amount:600},
+    {id:5,year:2026,month:0,type:"out",desc:"Affitto",category:"Casa",amount:550},
+    {id:6,year:2026,month:0,type:"out",desc:"Tasse e Cassa",category:"Tasse",amount:625},
+    {id:7,year:2026,month:0,type:"out",desc:"Macchina",category:"Auto",amount:640},
+    {id:8,year:2026,month:0,type:"out",desc:"Spese varie",category:"Altro",amount:1800},
+    {id:9,year:2026,month:1,type:"in",desc:"Stipendio Netto Metka",category:"Stipendio",amount:2100},
+    {id:10,year:2026,month:1,type:"out",desc:"Affitto",category:"Casa",amount:550},
+    {id:11,year:2026,month:1,type:"out",desc:"Ruote Mini",category:"Auto",amount:550}
+  ],
+  incomeCategories:["Stipendio","Professione","Rimborsi","Investimenti","Altro"],
+  expenseCategories:["Casa","Auto","Tasse","Lavoro","Vacanze","Acquisti","Salute","Tempo libero","Altro"],
+  rules:[],
+  liquidity:[
+    {id:101,type:"in",desc:"Revolut",amount:1200},
+    {id:102,type:"in",desc:"Conto dep. Revolut",amount:2300},
+    {id:103,type:"in",desc:"Revolut Pro",amount:60},
+    {id:104,type:"in",desc:"Trade Republic",amount:4900},
+    {id:105,type:"in",desc:"Contanti",amount:600},
+    {id:106,type:"in",desc:"PayPal",amount:10},
+    {id:107,type:"in",desc:"Poste",amount:200},
+    {id:108,type:"in",desc:"Stipendio Giugno Metka",amount:3000},
+    {id:109,type:"in",desc:"Stipendio Luglio Metka",amount:3000},
+    {id:110,type:"in",desc:"Caparra casa",amount:1100},
+    {id:201,type:"out",desc:"Tasse",amount:2600},
+    {id:202,type:"out",desc:"Affitto 4 mesi",amount:2200},
+    {id:203,type:"out",desc:"Rata cassa Geom.",amount:1400},
+    {id:204,type:"out",desc:"Assicurazione Auto",amount:600},
+    {id:205,type:"out",desc:"Bollo auto",amount:300},
+    {id:206,type:"out",desc:"Klarna",amount:500},
+    {id:207,type:"out",desc:"PayPal",amount:720},
+    {id:208,type:"out",desc:"Affitto 4 mesi",amount:2200},
+    {id:209,type:"out",desc:"Assicurazione Professionale",amount:500}
+  ],
+  investments:[
+    {id:301,name:"Trade Republic",capital:4900,rate:2,tax:26,note:"Non superare i 5K"},
+    {id:302,name:"Revolut",capital:2950,rate:2,tax:26,note:"Non superare i 5K"}
+  ]
+};
+
+let state=loadAndMigrate();
+let currentLegendFocus=null;
+
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function loadAndMigrate(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(!s || !Array.isArray(s.movements)) s=clone(seed);
+
+  if(!Array.isArray(s.rules)) s.rules=[];
+  if(!Array.isArray(s.incomeCategories)) s.incomeCategories=clone(seed.incomeCategories);
+  if(!Array.isArray(s.expenseCategories)) s.expenseCategories=clone(seed.expenseCategories);
+  if(!Array.isArray(s.liquidity)) s.liquidity=clone(seed.liquidity);
+  if(!Array.isArray(s.investments)) s.investments=clone(seed.investments);
+  if(!("selectedMonth" in s)) s.selectedMonth=null;
+  if(!("selectedYear" in s)) s.selectedYear=2026;
+  if(!s.activeScreen) s.activeScreen="summary";
+
+  s.movements.forEach(m=>{
+    if(!m.category) m.category=inferCategory(m.desc,m.type);
+  });
+  s.rules.forEach(r=>{
+    if(!r.category) r.category=inferCategory(r.desc,"out");
+    if(r.type==="monthly" && !r.months){
+      r.type="legacyMonthly";
+    }
+  });
+  return s;
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function uid(){return Date.now()+Math.floor(Math.random()*100000)}
+function euro(v){return new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(Number(v)||0)}
+function pct(v,total){return total?((v/total*100).toFixed(1).replace(".",",")+"%"):"0%"}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function yearMonthIndex(y,m){return y*12+m}
+function inferCategory(desc,type){
+  const d=String(desc||"").toLowerCase();
+  if(type==="in"){
+    if(d.includes("stipend")) return "Stipendio";
+    if(d.includes("ape")||d.includes("sia")||d.includes("zappar")||d.includes("profession")) return "Professione";
+    if(d.includes("interess")||d.includes("trade")) return "Investimenti";
+    return "Altro";
+  }
+  if(d.includes("affitto")||d.includes("condomin")||d.includes("casa")||d.includes("supermerc")||d.includes("spesa aliment")||d==="spesa") return "Casa";
+  if(d.includes("auto")||d.includes("macchin")||d.includes("ruote")||d.includes("bollo")||d.includes("assicurazione auto")) return "Auto";
+  if(d.includes("tass")||d.includes("cassa")) return "Tasse";
+  if(d.includes("vacanz")||d.includes("viagg")) return "Vacanze";
+  if(d.includes("assicurazione profession")||d.includes("lavor")) return "Lavoro";
+  return "Altro";
+}
+
+
+function renderCategoryOptions(){
+  const inList=document.getElementById("incomeCategories");
+  const outList=document.getElementById("expenseCategories");
+  if(inList) inList.innerHTML=(state.incomeCategories||[]).map(x=>`<option value="${esc(x)}"></option>`).join("");
+  if(outList) outList.innerHTML=(state.expenseCategories||[]).map(x=>`<option value="${esc(x)}"></option>`).join("");
+}
+
+function createCategory(type,targetId=null){
+  const label=type==="in"?"entrata":"uscita";
+  const name=prompt(`Nome nuova categoria ${label}:`);
+  if(name===null) return;
+
+  const clean=String(name).trim();
+  if(!clean) return;
+
+  const key=type==="in"?"incomeCategories":"expenseCategories";
+  const exists=(state[key]||[]).some(x=>x.toLowerCase()===clean.toLowerCase());
+
+  if(!exists){
+    state[key].push(clean);
+    save();
+    renderCategoryOptions();
+  }
+
+  const target=targetId
+    ? document.getElementById(targetId)
+    : document.getElementById(type==="in"?"focusInCategory":"focusOutCategory");
+
+  if(target) target.value=clean;
+}
+
+function polar(cx,cy,r,angle){const rad=(angle-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
+function donutSegmentPath(cx,cy,rOuter,rInner,startAngle,endAngle){
+  const largeArc=endAngle-startAngle<=180?"0":"1";
+  const p1=polar(cx,cy,rOuter,endAngle),p2=polar(cx,cy,rOuter,startAngle),p3=polar(cx,cy,rInner,startAngle),p4=polar(cx,cy,rInner,endAngle);
+  return ["M",p1.x,p1.y,"A",rOuter,rOuter,0,largeArc,0,p2.x,p2.y,"L",p3.x,p3.y,"A",rInner,rInner,0,largeArc,1,p4.x,p4.y,"Z"].join(" ");
+}
+
+function scheduledFor(year,month){
+  const out=[];
+  for(const r of state.rules){
+    if(r.type==="recurring"){
+      if(year===Number(r.year) && Array.isArray(r.months) && r.months.includes(month)){
+        out.push({ruleId:r.id,type:"out",desc:r.desc,category:r.category||"Altro",amount:Number(r.amount)||0,scheduled:true});
+      }
+    }else if(r.type==="annual"){
+      if(year>=Number(r.startYear||r.year) && year<=2030 && month===Number(r.startMonth)){
+        out.push({ruleId:r.id,type:"out",desc:r.desc,category:r.category||"Altro",amount:Number(r.amount)||0,scheduled:true});
+      }
+    }else if(r.type==="installment"){
+      const start=yearMonthIndex(Number(r.startYear),Number(r.startMonth));
+      const cur=yearMonthIndex(year,month);
+      const idx=cur-start;
+      const n=Math.max(2,Number(r.installments)||2);
+      const duration=Math.max(n,Number(r.durationMonths)||n);
+      const offsets=[];
+      for(let i=0;i<n;i++) offsets.push(Math.round(i*(duration-1)/(n-1)));
+      const installmentIndex=offsets.indexOf(idx);
+      if(installmentIndex!==-1){
+        out.push({
+          ruleId:r.id,type:"out",desc:`${r.desc} · rata ${installmentIndex+1}/${n}`,
+          category:r.category||"Altro",amount:(Number(r.amount)||0)/n,scheduled:true
+        });
+      }
+    }else if(r.type==="legacyMonthly"){
+      const start=yearMonthIndex(Number(r.startYear),Number(r.startMonth));
+      if(yearMonthIndex(year,month)>=start && year<=2030){
+        out.push({ruleId:r.id,type:"out",desc:r.desc,category:r.category||"Altro",amount:Number(r.amount)||0,scheduled:true});
+      }
+    }
+  }
+  return out;
+}
+function allItemsForMonth(year,month){
+  const manual=state.movements.filter(x=>x.year===year&&x.month===month).map(x=>({...x,scheduled:false,category:x.category||inferCategory(x.desc,x.type)}));
+  return manual.concat(scheduledFor(year,month));
+}
+function getPeriodItems(year,month=null){
+  if(month===null){
+    let all=[];
+    for(let m=0;m<12;m++) all=all.concat(allItemsForMonth(year,m).map(x=>({...x,month:m})));
+    return all;
+  }
+  return allItemsForMonth(year,month).map(x=>({...x,month}));
+}
+function getYearTotals(year){
+  const items=getPeriodItems(year,null);
+  const income=items.filter(x=>x.type==="in").reduce((a,b)=>a+Number(b.amount||0),0);
+  const expense=items.filter(x=>x.type==="out").reduce((a,b)=>a+Number(b.amount||0),0);
+  return{income,expense,balance:income-expense};
+}
+
+function renderYearSelect(){
+  const sel=document.getElementById("yearSelect");
+  sel.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join("");
+  sel.value=state.selectedYear;
+  sel.onchange=e=>{
+    state.selectedYear=parseInt(e.target.value);
+    state.selectedMonth=null;
+    save();
+    renderAll();
+  };
+}
+function renderScreenNav(){
+  const nav=document.getElementById("screenNav");
+  nav.innerHTML=SCREENS.map(s=>`<button class="nav-card ${state.activeScreen===s.id?"active":""}" onclick="showScreen('${s.id}')"><span class="nav-icon">${s.icon}</span><span class="nav-label">${s.label}</span></button>`).join("");
+}
+function showScreen(id){
+  state.activeScreen=id;
+  save();
+  document.querySelectorAll(".screen").forEach(el=>el.classList.toggle("active",el.dataset.screen===id));
+  renderScreenNav();
+  if(id==="summary") renderLiquidity();
+  if(id==="personal") renderPersonalCounts();
+}
+function renderSelects(){
+  const year=document.getElementById("ruleYear");
+  const annual=document.getElementById("ruleAnnualMonth");
+  const start=document.getElementById("ruleStartMonth");
+  if(year){year.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join("");year.value=state.selectedYear}
+  const opts=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+  if(annual) annual.innerHTML=opts;
+  if(start) start.innerHTML=opts;
+  renderRuleMonthsGrid();
+}
+function renderRuleMonthsGrid(){
+  const grid=document.getElementById("ruleMonthsGrid");
+  if(!grid)return;
+  grid.innerHTML=MONTHS.map((m,i)=>`<div class="month-check"><input id="ruleMonth_${i}" type="checkbox" value="${i}" onchange="updateSelectedMonthsCount()"><label for="ruleMonth_${i}">${m.slice(0,3)}</label></div>`).join("");
+  updateSelectedMonthsCount();
+}
+function updateSelectedMonthsCount(){
+  const selected=[...document.querySelectorAll('#ruleMonthsGrid input:checked')].length;
+  const el=document.getElementById("selectedMonthsCount");
+  if(el) el.textContent=`${selected} ${selected===1?"mese selezionato":"mesi selezionati"}`;
+}
+
+function renderSummary(){
+  const {income,expense}=getYearTotals(state.selectedYear);
+  const inv=getInvestmentTotals();
+  const balance=income+inv.net-expense;
+
+  document.getElementById("summaryYearLabel").textContent=state.selectedYear;
+  document.getElementById("annualIncome").textContent=euro(income);
+  document.getElementById("annualExpense").textContent=euro(expense);
+  document.getElementById("annualInvestmentGain").textContent=euro(inv.net);
+  document.getElementById("annualBalance").textContent=euro(balance);
+  document.getElementById("annualBalance").className="stat-value "+(balance>0?"pos":balance<0?"neg":"");
+
+  const chartData=[
+    {id:"income",label:"Entrate",value:income,color:"var(--green)",meta:"Incassi dai movimenti"},
+    {id:"expense",label:"Uscite",value:expense,color:"var(--red)",meta:"Spese registrate"},
+    {id:"investment",label:"Interessi conti",value:inv.net,color:"var(--gold)",meta:"Interessi netti annui"}
+  ].filter(x=>x.value>0);
+
+  renderAnnualFlowDonut(chartData,balance);
+
+  document.getElementById("summaryInsight").textContent =
+    `Nel ${state.selectedYear}: entrate ${euro(income)}, uscite ${euro(expense)}, interessi conti ${euro(inv.net)}. Risparmio totale: ${euro(balance)}.`;
+}
+
+function renderAnnualFlowDonut(items,balance){
+  const svg=document.getElementById("donutSvg");
+  const legend=document.getElementById("legendList");
+  svg.innerHTML="";
+  const total=items.reduce((a,b)=>a+b.value,0);
+
+  setCenter("Risparmiato",euro(balance),"saldo annuale totale");
+
+  if(!total){
+    svg.innerHTML='<circle cx="160" cy="160" r="104" fill="none" stroke="#242424" stroke-width="48"/>';
+    legend.innerHTML='<div class="legend-item active"><span class="legend-dot" style="background:#4a4a4a"></span><div><div class="legend-title">Nessun dato</div><div class="legend-meta">Aggiungi movimenti o conti fruttiferi</div></div><div class="legend-value">€ 0</div></div>';
+    return;
+  }
+
+  let angle=0;
+  items.forEach(item=>{
+    const slice=item.value/total*360;
+    const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("d",donutSegmentPath(160,160,104,62,angle,angle+slice));
+    path.setAttribute("fill",item.color);
+    path.setAttribute("opacity",".95");
+    path.dataset.id=item.id;
+
+    const mid=angle+slice/2;
+    const rad=(mid-90)*Math.PI/180;
+    path.dataset.tx=(Math.cos(rad)*8).toFixed(2);
+    path.dataset.ty=(Math.sin(rad)*8).toFixed(2);
+
+    path.addEventListener("mouseenter",()=>activateAnnualFlow(item.id,item));
+    path.addEventListener("mouseleave",()=>resetAnnualFlow(balance));
+    svg.appendChild(path);
+    angle+=slice;
+  });
+
+  legend.innerHTML=items.map(item=>`
+    <div class="legend-item" data-id="${item.id}"
+      onmouseenter="activateAnnualFlow('${item.id}',{label:'${item.label}',value:${item.value},meta:'${item.meta}'})"
+      onmouseleave="resetAnnualFlow(${balance})">
+      <span class="legend-dot" style="background:${item.color}"></span>
+      <div><div class="legend-title">${item.label}</div><div class="legend-meta">${item.meta} · ${pct(item.value,total)}</div></div>
+      <div class="legend-value">${euro(item.value)}</div>
+    </div>`).join("");
+}
+
+function activateAnnualFlow(id,item){
+  document.querySelectorAll("#donutSvg path[data-id]").forEach(p=>{
+    const on=p.dataset.id===id;
+    p.style.opacity=on?"1":".38";
+    p.style.transform=on?`translate(${p.dataset.tx}px,${p.dataset.ty}px)`:"translate(0,0)";
+  });
+  document.querySelectorAll(".legend-item[data-id]").forEach(l=>l.classList.toggle("active",l.dataset.id===id));
+  setCenter(item.label,euro(item.value),item.meta);
+}
+
+function resetAnnualFlow(balance){
+  document.querySelectorAll("#donutSvg path[data-id]").forEach(p=>{
+    p.style.opacity=".95";
+    p.style.transform="translate(0,0)";
+  });
+  document.querySelectorAll(".legend-item[data-id]").forEach(l=>l.classList.remove("active"));
+  setCenter("Risparmiato",euro(balance),"saldo annuale totale");
+}
+
+function setCenter(kicker,value,sub){
+  document.getElementById("centerKicker").textContent=kicker;
+  document.getElementById("centerValue").textContent=value;
+  document.getElementById("centerSub").textContent=sub;
+}
+
+function renderMonths(){renderMonthSelector();renderFocusedMonth()}
+function renderMonthSelector(){
+  const grid=document.getElementById("monthSelectorGrid");
+  grid.innerHTML=MONTHS.map((name,month)=>{
+    const items=allItemsForMonth(state.selectedYear,month);
+    const inc=items.filter(x=>x.type==="in").reduce((a,b)=>a+b.amount,0);
+    const out=items.filter(x=>x.type==="out").reduce((a,b)=>a+b.amount,0);
+    const bal=inc-out,cls=bal>0?"pos":bal<0?"neg":"zero";
+    return `<button class="month-select-card ${state.selectedMonth===month?"active":""}" onclick="selectMovementMonth(${month})">
+      <span class="m-topline">
+        <span class="m-name">${name}</span>
+        <span class="m-balance ${cls}">${bal>0?"+ ":""}${euro(bal)}</span>
+      </span>
+      <span class="m-flow">
+        <span class="pos">+${euro(inc)}</span>
+        <span class="neg">−${euro(out)}</span>
+      </span>
+    </button>`;
+  }).join("");
+}
+function selectMovementMonth(month){state.selectedMonth=month;save();renderMonthSelector();renderFocusedMonth();renderLiquidity()}
+function renderFocusedMonth(){
+  const neutral=document.getElementById("movementNeutral"),content=document.getElementById("movementFocusedContent");
+  if(state.selectedMonth===null){neutral.style.display="flex";content.style.display="none";renderMovementDonut(null);return}
+  neutral.style.display="none";content.style.display="block";
+  const month=Number(state.selectedMonth),items=allItemsForMonth(state.selectedYear,month);
+  const incomes=items.filter(x=>x.type==="in"),expenses=items.filter(x=>x.type==="out");
+  const inc=incomes.reduce((a,b)=>a+b.amount,0),out=expenses.reduce((a,b)=>a+b.amount,0),bal=inc-out;
+  document.getElementById("focusedMonthTitle").textContent=`${MONTHS[month]} ${state.selectedYear}`;
+  const balEl=document.getElementById("focusedMonthBalance");balEl.textContent=(bal>0?"+ ":"")+euro(bal);balEl.className=bal>0?"pos":bal<0?"neg":"zero";
+  document.getElementById("focusedIncomeTotal").textContent=euro(inc);document.getElementById("focusedExpenseTotal").textContent=euro(out);
+  document.getElementById("focusedIncomeList").innerHTML=renderFocusedList(incomes,"in");
+  document.getElementById("focusedExpenseList").innerHTML=renderFocusedList(expenses,"out");
+  renderMovementDonut({month,income:inc,expense:out,balance:bal});
+}
+function renderFocusedList(items,type){
+  if(!items.length)return'<p class="empty-note">Nessun movimento.</p>';
+  const manual=items.filter(x=>!x.scheduled);
+  return items.map(x=>{
+    if(x.scheduled)return`<div class="editable-row auto-row"><span class="auto-text">${esc(x.desc)} · <b>${esc(x.category)}</b> <span class="scheduled">AUTO</span></span><span class="amt ${type==="in"?"pos":"neg"}">${type==="in"?"+ ":"− "}${euro(x.amount)}</span></div>`;
+    const i=manual.findIndex(z=>z.id===x.id);
+    return `<div class="editable-row with-category">
+      <input class="inline-edit" value="${esc(x.desc)}" onchange="updateMovement(${x.id},'desc',this.value)">
+      <input class="inline-edit category" value="${esc(x.category||"Altro")}" list="${type==="in"?"incomeCategories":"expenseCategories"}" onchange="updateMovement(${x.id},'category',this.value)">
+      <input class="inline-edit money" type="number" min="0" step="0.01" value="${Number(x.amount)}" onchange="updateMovement(${x.id},'amount',this.value)">
+      <div class="row-actions"><button class="order-btn" ${i>0?"":"disabled"} onclick="moveMovement(${x.id},-1)">↑</button><button class="order-btn" ${i<manual.length-1?"":"disabled"} onclick="moveMovement(${x.id},1)">↓</button><button class="order-btn delete-mini" onclick="deleteMovement(${x.id})">×</button></div>
+    </div>`;
+  }).join("");
+}
+function addFocusedMovement(type){
+  if(state.selectedMonth===null)return;
+  const descEl=document.getElementById(type==="in"?"focusInDesc":"focusOutDesc");
+  const catEl=document.getElementById(type==="in"?"focusInCategory":"focusOutCategory");
+  const amountEl=document.getElementById(type==="in"?"focusInAmount":"focusOutAmount");
+  const desc=descEl.value.trim(),category=catEl.value.trim()||inferCategory(desc,type),amount=parseFloat(amountEl.value);
+  if(!desc||!(amount>0))return;
+  state.movements.push({id:uid(),year:state.selectedYear,month:Number(state.selectedMonth),type,desc,category,amount});
+  descEl.value="";catEl.value="";amountEl.value="";save();renderConnected();
+}
+function updateMovement(id,field,value){
+  const x=state.movements.find(m=>m.id===id);if(!x)return;
+  if(field==="amount"){const n=parseFloat(value);if(!(n>=0))return;x.amount=n}
+  else{const t=String(value).trim();if(!t)return;x[field]=t}
+  save();renderConnected();
+}
+function moveMovement(id,dir){
+  const x=state.movements.find(m=>m.id===id);if(!x)return;
+  const idx=state.movements.findIndex(m=>m.id===id);let j=idx+dir;
+  while(j>=0&&j<state.movements.length){
+    const y=state.movements[j];
+    if(y.year===x.year&&y.month===x.month&&y.type===x.type){[state.movements[idx],state.movements[j]]=[state.movements[j],state.movements[idx]];save();renderConnected();return}
+    j+=dir;
+  }
+}
+function deleteMovement(id){state.movements=state.movements.filter(x=>x.id!==id);save();renderConnected()}
+
+function renderMovementDonut(data){
+  const svg=document.getElementById("movementDonutSvg"),legend=document.getElementById("movementChartLegend"),title=document.getElementById("movementChartMonth");svg.innerHTML="";
+  if(!data){title.textContent="Nessun mese selezionato";svg.innerHTML='<circle cx="160" cy="160" r="103" fill="none" stroke="#292929" stroke-width="48"/>';document.getElementById("movementDonutLabel").textContent="Seleziona";document.getElementById("movementDonutValue").textContent="un mese";document.getElementById("movementDonutSub").textContent="grafico neutro";legend.innerHTML='<div class="movement-legend-row neutral-row"><span class="legend-dot" style="background:#454545"></span><span>Il grafico si attiva quando scegli un mese.</span><strong>—</strong></div>';return}
+  title.textContent=`${MONTHS[data.month]} ${state.selectedYear}`;const total=data.income+data.expense;
+  if(total<=0){svg.innerHTML='<circle cx="160" cy="160" r="103" fill="none" stroke="#303030" stroke-width="48"/>';document.getElementById("movementDonutLabel").textContent=MONTHS[data.month];document.getElementById("movementDonutValue").textContent="€ 0";document.getElementById("movementDonutSub").textContent="nessun movimento";legend.innerHTML="";return}
+  const items=[{label:"Entrate",value:data.income,color:"var(--green)"},{label:"Uscite",value:data.expense,color:"var(--red)"}].filter(x=>x.value>0);let angle=0;
+  items.forEach(item=>{const slice=item.value/total*360,path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("d",donutSegmentPath(160,160,104,62,angle,angle+slice));path.setAttribute("fill",item.color);path.setAttribute("opacity",".95");path.addEventListener("mouseenter",()=>{document.getElementById("movementDonutLabel").textContent=item.label;document.getElementById("movementDonutValue").textContent=euro(item.value);document.getElementById("movementDonutSub").textContent=pct(item.value,total)+" dei movimenti"});path.addEventListener("mouseleave",()=>setMovementDonutCenter(data));svg.appendChild(path);angle+=slice});
+  setMovementDonutCenter(data);legend.innerHTML=items.map(x=>`<div class="movement-legend-row"><span class="legend-dot" style="background:${x.color}"></span><span>${x.label} · ${pct(x.value,total)}</span><strong>${euro(x.value)}</strong></div>`).join("");
+}
+function setMovementDonutCenter(data){document.getElementById("movementDonutLabel").textContent=MONTHS[data.month];document.getElementById("movementDonutValue").textContent=(data.balance>0?"+ ":"")+euro(data.balance);document.getElementById("movementDonutSub").textContent="saldo del mese"}
+
+function updateRuleFields(){
+  const t=document.getElementById("ruleType").value;
+  document.getElementById("recurringMonthsBlock").style.display=t==="recurring"?"block":"none";
+  document.getElementById("annualBlock").style.display=t==="annual"?"block":"none";
+  document.getElementById("installmentBlock").style.display=t==="installment"?"block":"none";
+  const help=document.getElementById("ruleHelp");
+  help.textContent=t==="recurring"?"Scegli i mesi: l'importo verrà inserito automaticamente solo nei mesi selezionati dell'anno indicato."
+    :t==="annual"?"La spesa verrà inserita una volta l'anno, nel mese scelto, dall'anno indicato fino al 2030."
+    :"Inserisci costo totale, numero di rate e durata complessiva: le rate verranno distribuite nel periodo.";
+}
+function addRule(){
+  const desc=document.getElementById("ruleDesc").value.trim(),category=document.getElementById("ruleCategory").value.trim()||"Altro",amount=parseFloat(document.getElementById("ruleAmount").value),type=document.getElementById("ruleType").value,year=parseInt(document.getElementById("ruleYear").value);
+  if(!desc||!(amount>0))return;
+  const base={id:uid(),desc,category,amount,type};
+  if(type==="recurring"){
+    const months=[...document.querySelectorAll('#ruleMonthsGrid input:checked')].map(x=>parseInt(x.value));
+    if(!months.length)return;base.year=year;base.months=months;
+  }else if(type==="annual"){base.startYear=year;base.startMonth=parseInt(document.getElementById("ruleAnnualMonth").value)}
+  else{
+    const n=parseInt(document.getElementById("ruleInstallments").value),duration=parseInt(document.getElementById("ruleDuration").value);
+    if(!(n>=2)||!(duration>=n))return;
+    base.startYear=year;base.startMonth=parseInt(document.getElementById("ruleStartMonth").value);base.installments=n;base.durationMonths=duration;
+  }
+  state.rules.push(base);save();
+  document.getElementById("ruleDesc").value="";document.getElementById("ruleCategory").value="";document.getElementById("ruleAmount").value="";
+  document.querySelectorAll('#ruleMonthsGrid input').forEach(x=>x.checked=false);document.getElementById("ruleInstallments").value="";document.getElementById("ruleDuration").value="";updateSelectedMonthsCount();renderConnected();renderRules();
+}
+function renderRules(){
+  const body=document.getElementById("rulesBody");if(!body)return;
+  if(!state.rules.length){body.innerHTML='<tr><td colspan="6" style="color:#666">Nessuna spesa programmata.</td></tr>';return}
+  body.innerHTML=state.rules.map((r,i)=>{
+    let period="",detail="",label="";
+    if(r.type==="recurring"){label="Mesi scelti";period=`${r.year}`;detail=(r.months||[]).map(m=>MONTHS[m].slice(0,3)).join(", ")}
+    else if(r.type==="annual"){label="Annuale";period=`da ${r.startYear}`;detail=MONTHS[r.startMonth]}
+    else if(r.type==="installment"){label="A rate";period=`da ${MONTHS[r.startMonth]} ${r.startYear}`;detail=`${r.installments} rate / ${r.durationMonths||r.installments} mesi · ${euro(r.amount/r.installments)} cad.`}
+    else{label="Mensile";period=`da ${MONTHS[r.startMonth]} ${r.startYear}`;detail="ogni mese"}
+    return`<tr><td><input class="editable-table-input" value="${esc(r.desc)}" onchange="updateRule(${r.id},'desc',this.value)"><input class="editable-table-input category" list="expenseCategories" value="${esc(r.category||"Altro")}" onchange="updateRule(${r.id},'category',this.value)"></td><td>${label}</td><td>${period}</td><td class="num"><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(r.amount)}" onchange="updateRule(${r.id},'amount',this.value)"></td><td class="num">${detail}</td><td><div class="table-actions"><button class="order-btn" ${i===0?"disabled":""} onclick="moveRule(${r.id},-1)">↑</button><button class="order-btn" ${i===state.rules.length-1?"disabled":""} onclick="moveRule(${r.id},1)">↓</button><button class="order-btn delete-mini" onclick="deleteRule(${r.id})">×</button></div></td></tr>`;
+  }).join("");
+}
+function updateRule(id,field,value){const r=state.rules.find(x=>x.id===id);if(!r)return;if(field==="amount"){const n=parseFloat(value);if(!(n>=0))return;r.amount=n}else{const t=String(value).trim();if(!t)return;r[field]=t}save();renderConnected()}
+function moveRule(id,dir){const i=state.rules.findIndex(x=>x.id===id),j=i+dir;if(i<0||j<0||j>=state.rules.length)return;[state.rules[i],state.rules[j]]=[state.rules[j],state.rules[i]];save();renderRules()}
+function deleteRule(id){state.rules=state.rules.filter(x=>x.id!==id);save();renderConnected();renderRules()}
+
+function selectLiquidityPeriod(month){state.selectedMonth=month;save();renderMonthSelector();renderFocusedMonth();renderLiquidity()}
+function aggregateByCategory(items,type){
+  const map={};
+  items.filter(x=>x.type===type).forEach(x=>{const c=x.category||"Altro";if(!map[c])map[c]={category:c,total:0,items:[]};map[c].total+=Number(x.amount)||0;map[c].items.push(x)});
+  return Object.values(map).sort((a,b)=>b.total-a.total);
+}
+function renderCategoryList(targetId,groups,type,total){
+  const el=document.getElementById(targetId);
+  if(!groups.length){el.innerHTML='<div class="empty-note">Nessun movimento nel periodo.</div>';return}
+  el.innerHTML=groups.map((g,idx)=>`<div class="category-group" id="${targetId}_${idx}">
+    <button class="category-row" onclick="toggleCategory('${targetId}_${idx}')">
+      <span><span class="category-name">${esc(g.category)}</span><span class="category-share"> · ${pct(g.total,total)}</span></span>
+      <span class="category-total ${type==="out"?"neg":"pos"}">${euro(g.total)}</span>
+      <span class="category-chevron">⌄</span>
+    </button>
+    <div class="category-detail">${g.items.sort((a,b)=>a.month-b.month).map(x=>`<div class="subexpense"><span class="sub-month">${MONTHS[x.month].slice(0,3)} ${String(state.selectedYear).slice(2)}</span><span>${esc(x.desc)}${x.scheduled?' <span class="scheduled">AUTO</span>':""}</span><span class="sub-amount">${euro(x.amount)}</span></div>`).join("")}</div>
+  </div>`).join("");
+}
+function toggleCategory(id){document.getElementById(id)?.classList.toggle("open")}
+function renderLiquidity(){
+  document.getElementById("liqYearLabel").textContent=state.selectedYear;
+  document.getElementById("liqAllYearBtn").classList.toggle("active",state.selectedMonth===null);
+  document.getElementById("liqMonthFilters").innerHTML=MONTHS.map((m,i)=>`<button class="period-btn ${state.selectedMonth===i?"active":""}" onclick="selectLiquidityPeriod(${i})">${m.slice(0,3)}</button>`).join("");
+  const items=getPeriodItems(state.selectedYear,state.selectedMonth);
+  const income=items.filter(x=>x.type==="in").reduce((a,b)=>a+b.amount,0),expense=items.filter(x=>x.type==="out").reduce((a,b)=>a+b.amount,0),net=income-expense;
+  const period=state.selectedMonth===null?`Anno ${state.selectedYear}`:`${MONTHS[state.selectedMonth]} ${state.selectedYear}`;
+  document.getElementById("liqIncomeTotal").textContent=euro(income);document.getElementById("liqExpenseTotal").textContent=euro(expense);document.getElementById("liqNetTotal").textContent=euro(net);
+  document.getElementById("liqIncomeNote").textContent=period;document.getElementById("liqExpenseNote").textContent=period;document.getElementById("liqNetNote").textContent=period;
+  renderCategoryList("expenseCategoryList",aggregateByCategory(items,"out"),"out",expense);
+  renderCategoryList("incomeCategoryList",aggregateByCategory(items,"in"),"in",income);
+}
+function addPersonal(type){
+  const descEl=document.getElementById(type==="in"?"pcInDesc":"pcOutDesc");
+  const amountEl=document.getElementById(type==="in"?"pcInAmount":"pcOutAmount");
+  const desc=descEl.value.trim();
+  const amount=parseFloat(amountEl.value);
+  if(!desc||!(amount>0)) return;
+
+  state.liquidity.push({id:uid(),type,desc,amount});
+  descEl.value="";
+  amountEl.value="";
+  save();
+  renderPersonalCounts();
+}
+
+function updatePersonal(id,field,value){
+  const x=state.liquidity.find(a=>a.id===id);
+  if(!x) return;
+
+  if(field==="amount"){
+    const n=parseFloat(value);
+    if(!(n>=0)) return;
+    x.amount=n;
+  }else{
+    const t=String(value).trim();
+    if(!t) return;
+    x.desc=t;
+  }
+  save();
+  renderPersonalCounts();
+}
+
+function movePersonal(id,dir){
+  const x=state.liquidity.find(a=>a.id===id);
+  if(!x) return;
+  const i=state.liquidity.findIndex(a=>a.id===id);
+  let j=i+dir;
+
+  while(j>=0&&j<state.liquidity.length){
+    if(state.liquidity[j].type===x.type){
+      [state.liquidity[i],state.liquidity[j]]=[state.liquidity[j],state.liquidity[i]];
+      save();
+      renderPersonalCounts();
+      return;
+    }
+    j+=dir;
+  }
+}
+
+function deletePersonal(id){
+  state.liquidity=state.liquidity.filter(x=>x.id!==id);
+  save();
+  renderPersonalCounts();
+}
+
+function renderPersonalCounts(){
+  const ins=(state.liquidity||[]).filter(x=>x.type==="in");
+  const outs=(state.liquidity||[]).filter(x=>x.type==="out");
+
+  const row=(x,list,i)=>`<tr>
+    <td><input class="editable-table-input" value="${esc(x.desc)}" onchange="updatePersonal(${x.id},'desc',this.value)"></td>
+    <td><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(x.amount)}" onchange="updatePersonal(${x.id},'amount',this.value)"></td>
+    <td><div class="table-actions">
+      <button class="order-btn" ${i===0?"disabled":""} onclick="movePersonal(${x.id},-1)">↑</button>
+      <button class="order-btn" ${i===list.length-1?"disabled":""} onclick="movePersonal(${x.id},1)">↓</button>
+      <button class="order-btn delete-mini" onclick="deletePersonal(${x.id})">×</button>
+    </div></td>
+  </tr>`;
+
+  document.getElementById("personalInBody").innerHTML=ins.length
+    ? ins.map((x,i)=>row(x,ins,i)).join("")
+    : '<tr><td colspan="3" class="empty-note">Nessuna disponibilità.</td></tr>';
+
+  document.getElementById("personalOutBody").innerHTML=outs.length
+    ? outs.map((x,i)=>row(x,outs,i)).join("")
+    : '<tr><td colspan="3" class="empty-note">Nessuna spesa prevista.</td></tr>';
+
+  const positive=ins.reduce((s,x)=>s+Number(x.amount||0),0);
+  const negative=outs.reduce((s,x)=>s+Number(x.amount||0),0);
+  const final=positive-negative;
+
+  document.getElementById("personalPositiveTotal").textContent=euro(positive);
+  document.getElementById("personalNegativeTotal").textContent=euro(negative);
+  document.getElementById("personalFinalTotal").textContent=euro(final);
+  document.getElementById("personalPositiveHeader").textContent=euro(positive);
+  document.getElementById("personalNegativeHeader").textContent=euro(negative);
+  document.getElementById("personalFinalBanner").textContent=euro(final);
+
+  const finalEl=document.getElementById("personalFinalTotal");
+  finalEl.className="stat-value "+(final>0?"pos":final<0?"neg":"");
+  const banner=document.getElementById("personalFinalBanner");
+  banner.className=final>0?"pos":final<0?"neg":"";
+}
+
+
+function investmentProjection(x,months=12){
+  let balance=Number(x.capital)||0;
+  const annualRate=(Number(x.rate)||0)/100;
+  const taxRate=(Number(x.tax)||0)/100;
+  let gross=0,net=0;
+  const rows=[];
+
+  for(let m=0;m<months;m++){
+    const start=balance;
+    const monthGross=start*(annualRate/12);
+    const monthNet=monthGross*(1-taxRate);
+    balance+=monthNet;
+    gross+=monthGross;
+    net+=monthNet;
+    rows.push({
+      month:m,
+      start,
+      gross:monthGross,
+      net:monthNet,
+      end:balance
+    });
+  }
+
+  return{gross,net,finalBalance:balance,rows};
+}
+
+function investmentCalc(x){
+  const p=investmentProjection(x,12);
+  return{gross:p.gross,net:p.net,finalBalance:p.finalBalance};
+}
+
+function getInvestmentTotals(){
+  let capital=0,gross=0,net=0,finalBalance=0;
+  (state.investments||[]).forEach(x=>{
+    const c=investmentProjection(x,12);
+    capital+=Number(x.capital)||0;
+    gross+=c.gross;
+    net+=c.net;
+    finalBalance+=c.finalBalance;
+  });
+  return{capital,gross,net,finalBalance};
+}
+
+function addInvestment(){
+  const name=document.getElementById("invName").value.trim();
+  const capital=parseFloat(document.getElementById("invCapital").value);
+  const rate=parseFloat(document.getElementById("invRate").value);
+  const tax=parseFloat(document.getElementById("invTax").value);
+  const note=document.getElementById("invNote").value.trim();
+
+  if(!name||!(capital>=0)||!(rate>=0)||!(tax>=0))return;
+
+  state.investments.push({id:uid(),name,capital,rate,tax,note});
+  ["invName","invCapital","invRate","invNote"].forEach(id=>document.getElementById(id).value="");
+  save();
+  renderInvestments();
+  renderSummary();
+}
+
+function updateInvestment(id,field,value){
+  const x=state.investments.find(a=>a.id===id);
+  if(!x)return;
+
+  if(["capital","rate","tax"].includes(field)){
+    const n=parseFloat(value);
+    if(!(n>=0))return;
+    x[field]=n;
+  }else{
+    x[field]=String(value);
+  }
+
+  save();
+  renderInvestments();
+  renderSummary();
+}
+
+function moveInvestment(id,dir){
+  const i=state.investments.findIndex(x=>x.id===id);
+  const j=i+dir;
+  if(i<0||j<0||j>=state.investments.length)return;
+  [state.investments[i],state.investments[j]]=[state.investments[j],state.investments[i]];
+  save();
+  renderInvestments();
+  renderSummary();
+}
+
+function deleteInvestment(id){
+  state.investments=state.investments.filter(x=>x.id!==id);
+  save();
+  renderInvestments();
+  renderSummary();
+  const detail=document.getElementById("investmentMonthDetail");
+  if(detail) detail.innerHTML='<div class="investment-detail-empty">Clicca <strong>12 mesi</strong> su un conto per vedere il dettaglio mensile.</div>';
+}
+
+function showInvestmentMonths(id){
+  const x=state.investments.find(a=>a.id===id);
+  if(!x)return;
+
+  const p=investmentProjection(x,12);
+  const detail=document.getElementById("investmentMonthDetail");
+
+  detail.innerHTML=`
+    <div class="investment-detail-head">
+      <div>
+        <h3>${esc(x.name)} · capitalizzazione mensile</h3>
+        <span>${Number(x.rate).toLocaleString("it-IT")}% annuo · imposta ${Number(x.tax).toLocaleString("it-IT")}%</span>
+      </div>
+      <strong class="pos">${euro(p.net)} netti / 12 mesi</strong>
+    </div>
+    <div class="month-interest-grid">
+      ${p.rows.map(r=>`
+        <div class="month-interest-card">
+          <div class="mi-month"><span>${MONTHS[r.month]}</span><span>${euro(r.end)}</span></div>
+          <div class="mi-row"><span>Capitale iniziale</span><b>${euro(r.start)}</b></div>
+          <div class="mi-row gain"><span>Interesse netto</span><b>+ ${euro(r.net)}</b></div>
+          <div class="mi-row"><span>Nuovo capitale</span><b>${euro(r.end)}</b></div>
+        </div>
+      `).join("")}
+    </div>`;
+}
+
+function renderInvestments(){
+  const body=document.getElementById("investmentsBody");
+  let totalCap=0,totalNet=0,totalFinal=0;
+
+  body.innerHTML=state.investments.map((x,i)=>{
+    const c=investmentProjection(x,12);
+    totalCap+=Number(x.capital)||0;
+    totalNet+=c.net;
+    totalFinal+=c.finalBalance;
+
+    return`<tr>
+      <td><input class="editable-table-input" value="${esc(x.name)}" onchange="updateInvestment(${x.id},'name',this.value)"></td>
+      <td><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(x.capital)}" onchange="updateInvestment(${x.id},'capital',this.value)"></td>
+      <td><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(x.rate)}" onchange="updateInvestment(${x.id},'rate',this.value)"></td>
+      <td><div class="percent-input-wrap"><input class="editable-table-input amount" type="number" min="0" max="100" step=".1" value="${Number(x.tax)}" onchange="updateInvestment(${x.id},'tax',this.value)"><span>%</span></div></td>
+      <td class="num pos">${euro(c.net)}</td>
+      <td class="num">${euro(c.finalBalance)}</td>
+      <td><input class="editable-table-input" value="${esc(x.note||"")}" onchange="updateInvestment(${x.id},'note',this.value)"></td>
+      <td>
+        <div class="table-actions">
+          <button class="investment-detail-btn" onclick="showInvestmentMonths(${x.id})">12 mesi</button>
+          <button class="order-btn" ${i===0?"disabled":""} onclick="moveInvestment(${x.id},-1)">↑</button>
+          <button class="order-btn" ${i===state.investments.length-1?"disabled":""} onclick="moveInvestment(${x.id},1)">↓</button>
+          <button class="order-btn delete-mini" onclick="deleteInvestment(${x.id})">×</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  if(!state.investments.length){
+    body.innerHTML='<tr><td colspan="8" class="empty-note">Nessun conto fruttifero.</td></tr>';
+  }
+
+  document.getElementById("invTotalCapital").textContent=euro(totalCap);
+  document.getElementById("invTotalNet").textContent=euro(totalNet);
+  document.getElementById("invTotalFinal").textContent=euro(totalFinal);
+}
+
+function renderConnected(){renderSummary();renderMonths();renderLiquidity();renderRules();renderPersonalCounts()}
+function renderAll(){
+  if(state.activeScreen==="liquidity") state.activeScreen="summary";
+  renderYearSelect();renderScreenNav();renderSelects();renderCategoryOptions();showScreen(state.activeScreen||"summary");
+  updateRuleFields();renderSummary();renderMonths();renderRules();renderLiquidity();renderInvestments();renderPersonalCounts();
+}
+renderAll();
+
+
+let mobileAddType="out";
+
+function isMobileAppView(){
+  return window.matchMedia("(max-width:760px)").matches;
+}
+
+function getDeviceCurrentPeriod(){
+  const now=new Date();
+  const year=YEARS.includes(now.getFullYear()) ? now.getFullYear() : state.selectedYear;
+  return {year,month:now.getMonth()};
+}
+
+function renderMobileHome(){
+  if(!isMobileAppView())return;
+
+  const {year,month}=getDeviceCurrentPeriod();
+  const items=allItemsForMonth(year,month);
+  const incomeItems=items.filter(x=>x.type==="in");
+  const expenseItems=items.filter(x=>x.type==="out");
+
+  const income=incomeItems.reduce((a,b)=>a+Number(b.amount||0),0);
+  const expense=expenseItems.reduce((a,b)=>a+Number(b.amount||0),0);
+  const balance=income-expense;
+
+  document.getElementById("mobileHomeMonth").textContent=`${MONTHS[month]} ${year}`;
+  document.getElementById("mobileHomeIncome").textContent=euro(income);
+  document.getElementById("mobileHomeExpense").textContent=euro(expense);
+
+  const balanceEl=document.getElementById("mobileHomeBalance");
+  balanceEl.textContent=(balance>0?"+ ":"")+euro(balance);
+  balanceEl.className=balance>0?"pos":balance<0?"neg":"zero";
+
+  document.getElementById("mobileIncomeCount").textContent=incomeItems.length;
+  document.getElementById("mobileExpenseCount").textContent=expenseItems.length;
+
+  document.getElementById("mobileHomeIncomeList").innerHTML=renderMobileHomeList(incomeItems,"in");
+  document.getElementById("mobileHomeExpenseList").innerHTML=renderMobileHomeList(expenseItems,"out");
+}
+
+function renderMobileHomeList(items,type){
+  if(!items.length){
+    return `<div class="mobile-list-empty">Nessun movimento.</div>`;
+  }
+
+  return items.map(x=>`
+    <div class="mobile-home-row">
+      <div class="mh-text">
+        <strong>${esc(x.desc)}</strong>
+        <span>${esc(x.category||"Altro")}${x.scheduled?" · automatico":""}</span>
+      </div>
+      <div class="mh-amount ${type==="in"?"pos":"neg"}">${type==="in"?"+ ":"− "}${euro(x.amount)}</div>
+    </div>
+  `).join("");
+}
+
+function openMobileAdd(type){
+  mobileAddType=type;
+  const {year,month}=getDeviceCurrentPeriod();
+
+  document.getElementById("mobileAddTitle").textContent=type==="in"?"Aggiungi entrata":"Aggiungi uscita";
+  document.getElementById("mobileAddKicker").textContent=`${MONTHS[month]} ${year}`;
+
+  const category=document.getElementById("mobileAddCategory");
+  category.value="";
+  category.setAttribute("list",type==="in"?"incomeCategories":"expenseCategories");
+  category.placeholder=type==="in"?"Categoria entrata":"Categoria uscita";
+
+  document.getElementById("mobileAddAmount").value="";
+  document.getElementById("mobileAddDesc").value="";
+  document.getElementById("mobileAddFeedback").textContent="";
+
+  const monthSelect=document.getElementById("mobileAddMonth");
+  const yearSelect=document.getElementById("mobileAddYear");
+
+  if(!monthSelect.options.length){
+    monthSelect.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+  }
+  if(!yearSelect.options.length){
+    yearSelect.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join("");
+  }
+
+  monthSelect.value=month;
+  yearSelect.value=year;
+
+  document.getElementById("mobileAddSheet").classList.add("open");
+  setTimeout(()=>document.getElementById("mobileAddAmount").focus(),220);
+}
+
+function closeMobileAdd(){
+  document.getElementById("mobileAddSheet")?.classList.remove("open");
+}
+
+function createMobileCategory(){
+  const label=mobileAddType==="in"?"entrata":"uscita";
+  const name=prompt(`Nome nuova categoria ${label}:`);
+  if(name===null)return;
+
+  const clean=String(name).trim();
+  if(!clean)return;
+
+  const key=mobileAddType==="in"?"incomeCategories":"expenseCategories";
+  if(!(state[key]||[]).some(x=>x.toLowerCase()===clean.toLowerCase())){
+    state[key].push(clean);
+    save();
+    renderCategoryOptions();
+  }
+
+  document.getElementById("mobileAddCategory").value=clean;
+}
+
+function saveMobileMovement(){
+  const amount=parseFloat(document.getElementById("mobileAddAmount").value);
+  const desc=document.getElementById("mobileAddDesc").value.trim();
+  const category=document.getElementById("mobileAddCategory").value.trim()||inferCategory(desc,mobileAddType);
+  const month=parseInt(document.getElementById("mobileAddMonth").value);
+  const year=parseInt(document.getElementById("mobileAddYear").value);
+
+  if(!(amount>0)){
+    showMobileAddFeedback("Inserisci l'importo.",true);
+    return;
+  }
+
+  if(!desc){
+    showMobileAddFeedback("Inserisci la descrizione.",true);
+    return;
+  }
+
+  state.movements.push({
+    id:uid(),
+    year,
+    month,
+    type:mobileAddType,
+    desc,
+    category,
+    amount
+  });
+
+  state.selectedYear=year;
+  state.selectedMonth=month;
+  save();
+
+  renderCategoryOptions();
+  renderSummary();
+  renderMonths();
+  renderLiquidity();
+  renderMobileHome();
+
+  showMobileAddFeedback(`${mobileAddType==="in"?"Entrata":"Uscita"} salvata.`,false);
+  setTimeout(closeMobileAdd,450);
+}
+
+function showMobileAddFeedback(text,error){
+  const el=document.getElementById("mobileAddFeedback");
+  el.textContent=text;
+  el.style.color=error?"var(--red)":"var(--green)";
+}
+
+function updateMobileBottomNav(){
+  if(!isMobileAppView())return;
+  const target=state.activeScreen||"quick";
+  document.querySelectorAll(".mobile-nav-btn").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.target===target);
+  });
+}
+
+showScreen=function(id){
+  state.activeScreen=id;
+  save();
+
+  document.querySelectorAll(".screen").forEach(el=>{
+    el.classList.toggle("active",el.dataset.screen===id);
+  });
+
+  if(!isMobileAppView())renderScreenNav();
+
+  if(id==="summary")renderLiquidity();
+  if(id==="personal")renderPersonalCounts();
+  if(id==="quick")renderMobileHome();
+
+  updateMobileBottomNav();
+
+  if(isMobileAppView()){
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+};
+
+function setupMobileApp(){
+  if(!isMobileAppView())return;
+
+  const {year,month}=getDeviceCurrentPeriod();
+
+  state.selectedYear=year;
+  state.selectedMonth=month;
+  state.activeScreen="quick";
+  save();
+
+  showScreen("quick");
+  renderMobileHome();
+  updateMobileBottomNav();
+}
+
+window.addEventListener("resize",()=>{
+  if(isMobileAppView()){
+    renderMobileHome();
+    updateMobileBottomNav();
+  }
+});
+
+setupMobileApp();
+
+</script>
+</body>
+</html>
