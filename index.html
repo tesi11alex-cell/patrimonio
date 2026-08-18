@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="6.0">
+<meta name="app-version" content="7.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -2088,6 +2088,15 @@ details[open] .summary-arrow{transform:rotate(180deg)}
   }
 }
 
+
+@media(max-width:760px){
+  .top-right .cloud-auth-btn{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -3767,7 +3776,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=6").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=7").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
