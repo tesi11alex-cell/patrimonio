@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="8.0">
+<meta name="app-version" content="9.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -3776,7 +3776,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=8").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=9").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
@@ -3791,7 +3791,7 @@ if("serviceWorker" in navigator){
   "use strict";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyDCupPozD9XrnZZRUqkCE3SY73S5I3zrdQ",
+    apiKey: "AIzaSyDCupPoZDgXrnZZRUqkCE3SY73S5I3zrdQ",
     authDomain: "patrimonio-alessandro.firebaseapp.com",
     projectId: "patrimonio-alessandro",
     storageBucket: "patrimonio-alessandro.firebasestorage.app",
