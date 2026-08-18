@@ -6,7 +6,7 @@
 <title>Libretto Patrimonio Dashboard</title>
 
 <meta name="theme-color" content="#050505">
-<meta name="app-version" content="5.0">
+<meta name="app-version" content="6.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Patrimonio">
@@ -3767,7 +3767,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=5").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=6").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
@@ -3782,12 +3782,12 @@ if("serviceWorker" in navigator){
   "use strict";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyAI6gnwATgqoKWJBZ6gED8VhvyNBxV_xqk",
-    authDomain: "planner-alessandro.firebaseapp.com",
-    projectId: "planner-alessandro",
-    storageBucket: "planner-alessandro.firebasestorage.app",
-    messagingSenderId: "437936177868",
-    appId: "1:437936177868:web:4e57ce00b20e9234d7f869"
+    apiKey: "AIzaSyDCupPozD9XrnZZRUqkCE3SY73S5I3zrdQ",
+    authDomain: "patrimonio-alessandro.firebaseapp.com",
+    projectId: "patrimonio-alessandro",
+    storageBucket: "patrimonio-alessandro.firebasestorage.app",
+    messagingSenderId: "152018596866",
+    appId: "1:152018596866:web:87a93a6c75a403c42ca31b"
   };
 
   const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
