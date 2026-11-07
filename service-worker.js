@@ -1,4 +1,4 @@
-const CACHE_NAME="patrimonio-v12";
+const CACHE_NAME="patrimonio-v13";
 const APP_SHELL=[
   "./index.html",
   "./manifest.webmanifest",

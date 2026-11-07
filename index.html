@@ -2235,6 +2235,123 @@ th,td,
   }
 }
 
+
+/* ===== V12 · inserimento guidato, mese corrente, spese programmate ===== */
+:root{--gold-soft:rgba(215,179,106,.14)}
+select.field,select.inline-edit,select.editable-table-input{
+  appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,#8a8a8a 50%),linear-gradient(135deg,#8a8a8a 50%,transparent 50%);
+  background-position:calc(100% - 14px) 52%,calc(100% - 9px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+  padding-right:26px !important;
+}
+.field.invalid,select.invalid{border-color:var(--red) !important;box-shadow:0 0 0 2px rgba(255,123,114,.22)}
+
+/* form di inserimento */
+.add-card{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"cat cat" "desc desc" "amount add";
+  gap:10px;align-items:end;margin-bottom:12px;padding:12px;
+  border:1px solid var(--line);border-radius:12px;background:#090909;
+}
+.add-in{border-top:2px solid var(--green)} .add-out{border-top:2px solid var(--red)}
+.af-cat{grid-area:cat}.af-desc{grid-area:desc}.af-amount{grid-area:amount}.add-btn{grid-area:add;height:40px;white-space:nowrap}
+.add-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.add-field>span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.add-card .field{width:100%;font-size:13px;padding:10px 11px;min-height:40px}
+.add-card .amount-field{padding-left:26px !important}
+
+/* riga movimento: categoria come "etichetta" modificabile */
+.inline-edit.cat-chip{color:var(--gold);cursor:pointer;border-color:var(--line)}
+.inline-edit.cat-chip:hover{border-color:var(--line2)}
+select option{background:#151515;color:#f3f3f3}
+.editable-row{padding:8px}
+.inline-edit{font-size:12.5px;padding:6px 7px}
+
+/* mese corrente */
+.month-select-card.current{
+  border-color:var(--gold);
+  background:linear-gradient(180deg,var(--gold-soft),#0d0d0d 70%);
+  box-shadow:0 0 0 1px rgba(215,179,106,.55),0 0 20px rgba(215,179,106,.2);
+}
+.month-select-card.current.active{background:linear-gradient(180deg,rgba(215,179,106,.28),#161616 80%);border-color:var(--text);box-shadow:0 0 0 2px var(--gold),0 0 22px rgba(215,179,106,.3)}
+.cur-tag{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:8px;letter-spacing:.08em;color:var(--gold);margin-left:6px;vertical-align:1px;white-space:nowrap}
+.cur-tag.big{font-size:10px;border:1px solid var(--gold);border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:middle;background:var(--gold-soft)}
+.period-btn.current{border-color:var(--gold);color:var(--gold);box-shadow:0 0 12px rgba(215,179,106,.25)}
+.period-btn.current.active{background:var(--text);color:#050505;box-shadow:0 0 0 2px var(--gold)}
+.month-select-card.active:not(.current){box-shadow:0 0 0 1px var(--text)}
+
+/* spese programmate */
+.rule-count{font-style:normal;display:inline-block;min-width:20px;padding:1px 7px;margin-left:8px;border-radius:99px;background:var(--gold-soft);border:1px solid rgba(215,179,106,.5);color:var(--gold);font-family:"IBM Plex Mono",monospace;font-size:10px;text-align:center}
+.recurring-details summary strong{font-size:15px !important}
+.recurring-details summary span:not(.summary-arrow){font-size:12px !important}
+.rule-new{border:1px solid var(--line);border-radius:12px;background:#090909;padding:14px;margin-bottom:18px}
+.rule-new-title,.rule-list-title{margin:0 0 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.rule-list-title{color:var(--muted)}
+.rf-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.6fr) minmax(0,.7fr);gap:10px}
+.rf-grid .field,.rule-new .field,.rule-new select{width:100%;min-height:40px;font-size:13px}
+.rf-grid .amount-field{padding-left:26px !important}
+.rf-when{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 16px;margin-top:14px}
+.rf-label{flex:1 0 100%;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:#101010;color:var(--muted);padding:10px 14px;font-size:12.5px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--text);color:#050505;font-weight:600}
+.rf-year{width:110px}
+.months-pick-head{font-size:12px !important}
+.link-btn{border:0;background:none;color:var(--blue);font-size:11px;cursor:pointer;margin-left:8px;padding:0;text-decoration:underline}
+.months-check-grid{grid-template-columns:repeat(6,1fr)}
+.month-check label{padding:10px 6px;font-size:12px;border-radius:9px}
+.month-check input:checked+label{background:var(--gold-soft);color:var(--gold);border-color:var(--gold);font-weight:600}
+.rule-create-row .btn{white-space:nowrap;padding:11px 16px;font-size:13px}
+.note-box{font-size:12px}
+
+.rules-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.rule-card{border:1px solid var(--line);border-radius:12px;background:#0a0a0a;padding:12px;display:flex;flex-direction:column;gap:10px}
+.rule-top{display:flex;align-items:center;gap:8px}
+.rule-when{flex:1;font-size:11.5px;color:var(--muted);min-width:0}
+.rule-badge{font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:99px;border:1px solid var(--line2);white-space:nowrap}
+.rule-badge.t-recurring{color:var(--blue);border-color:rgba(122,162,247,.5);background:rgba(122,162,247,.1)}
+.rule-badge.t-annual{color:var(--gold);border-color:rgba(215,179,106,.5);background:var(--gold-soft)}
+.rule-badge.t-installment{color:var(--green);border-color:rgba(103,214,150,.5);background:rgba(103,214,150,.1)}
+.rule-main{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;align-items:center}
+.rule-main .rule-desc{grid-column:1/-1}
+.rule-main .editable-table-input{width:100%;min-width:0;font-size:13px;padding:7px 8px;border-color:var(--line)}
+.rule-main .rule-desc{font-weight:600}
+.rule-main .cat-chip{color:var(--gold)}
+.rule-main .amount{padding-left:25px !important}
+.rule-chips{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.mchip{text-align:center;font-size:9px;padding:4px 0;border-radius:5px;background:#101010;color:#555;border:1px solid #1b1b1b}
+.mchip.on{background:var(--gold-soft);color:var(--gold);border-color:rgba(215,179,106,.55);font-weight:600}
+.rule-extra{font-size:12px;color:var(--muted)}
+.rule-extra b{color:var(--text);font-family:"IBM Plex Mono",monospace}
+.rules-empty{border:1px dashed var(--line2);border-radius:12px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:5px}
+.rules-empty span{color:var(--muted);font-size:12px}
+@media(max-width:700px){
+  .rf-grid{grid-template-columns:1fr}
+  .rule-main{grid-template-columns:1fr 1fr}
+  .months-check-grid{grid-template-columns:repeat(4,1fr)}
+  .seg{width:100%}.seg button{flex:1 1 auto;padding:10px 8px}
+  .rules-list{grid-template-columns:1fr}
+  .rf-year{width:100%}
+  .rule-chips{grid-template-columns:repeat(6,1fr)}
+}
+
+.compact-row select{max-width:240px}
+.compact-row .mini-label{white-space:nowrap}
+.add-card .add-btn{padding:0 18px}
+
+/* ===== Schermi grandi: 14" (≈1280-1919 px) e 27" (≥1920 px) ===== */
+@media(min-width:1280px){
+  body{padding-top:28px}
+  .sheet{max-width:1250px;zoom:1.12}
+}
+@media(min-width:1920px){
+  .sheet{max-width:1380px;zoom:1.3}
+}
+@media(min-width:2400px){
+  .sheet{max-width:1440px;zoom:1.6}
+}
+
 </style>
 </head>
 <body>
@@ -2331,12 +2448,12 @@ th,td,
         <input id="mobileAddAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
       </div>
 
-      <input id="mobileAddDesc" class="field" placeholder="Descrizione">
-
       <div class="category-create-wrap mobile-category-select-wrap">
         <select id="mobileAddCategory" class="field mobile-category-select"></select>
         <button class="category-add-btn" type="button" title="Nuova categoria" onclick="createMobileCategory()">+</button>
       </div>
+
+      <input id="mobileAddDesc" class="field" placeholder="Che tipo è? es. Soldi lavoro extra">
 
       <div class="mobile-add-period">
         <select id="mobileAddMonth"></select>
@@ -2484,14 +2601,17 @@ th,td,
               <h4>Entrate</h4>
               <span id="focusedIncomeTotal">€ 0</span>
             </div>
-            <div class="quick-add quick-add-category">
-              <input id="focusInDesc" class="field" placeholder="Nuova entrata">
-              <div class="category-create-wrap">
-  <input id="focusInCategory" class="field" list="incomeCategories" placeholder="Categoria">
-  <button class="category-add-btn" type="button" title="Crea nuova categoria entrata" onclick="createCategory('in')">+</button>
-</div>
-              <input id="focusInAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="Importo">
-              <button class="btn primary" onclick="addFocusedMovement('in')">+</button>
+            <div class="add-card add-in">
+              <label class="add-field af-cat"><span>1 · Categoria</span>
+                <select id="focusInCategory" class="field cat-select" data-type="in" onchange="categoryPicked('in',this)"></select>
+              </label>
+              <label class="add-field af-desc"><span>2 · Che tipo di entrata è?</span>
+                <input id="focusInDesc" class="field" placeholder="es. Soldi lavoro extra" autocomplete="off" onkeydown="if(event.key==='Enter')addFocusedMovement('in')">
+              </label>
+              <label class="add-field af-amount"><span>3 · Importo</span>
+                <input id="focusInAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="0,00" onkeydown="if(event.key==='Enter')addFocusedMovement('in')">
+              </label>
+              <button class="btn primary add-btn" onclick="addFocusedMovement('in')">+ Aggiungi</button>
             </div>
             <div class="editable-list" id="focusedIncomeList"></div>
           </div>
@@ -2501,14 +2621,17 @@ th,td,
               <h4>Uscite</h4>
               <span id="focusedExpenseTotal">€ 0</span>
             </div>
-            <div class="quick-add quick-add-category">
-              <input id="focusOutDesc" class="field" placeholder="Nuova uscita">
-              <div class="category-create-wrap">
-  <input id="focusOutCategory" class="field" list="expenseCategories" placeholder="Categoria">
-  <button class="category-add-btn" type="button" title="Crea nuova categoria uscita" onclick="createCategory('out')">+</button>
-</div>
-              <input id="focusOutAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="Importo">
-              <button class="btn primary" onclick="addFocusedMovement('out')">+</button>
+            <div class="add-card add-out">
+              <label class="add-field af-cat"><span>1 · Categoria</span>
+                <select id="focusOutCategory" class="field cat-select" data-type="out" onchange="categoryPicked('out',this)"></select>
+              </label>
+              <label class="add-field af-desc"><span>2 · Che tipo di uscita è?</span>
+                <input id="focusOutDesc" class="field" placeholder="es. Rata auto" autocomplete="off" onkeydown="if(event.key==='Enter')addFocusedMovement('out')">
+              </label>
+              <label class="add-field af-amount"><span>3 · Importo</span>
+                <input id="focusOutAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="0,00" onkeydown="if(event.key==='Enter')addFocusedMovement('out')">
+              </label>
+              <button class="btn primary add-btn" onclick="addFocusedMovement('out')">+ Aggiungi</button>
             </div>
             <div class="editable-list" id="focusedExpenseList"></div>
           </div>
@@ -2536,69 +2659,77 @@ th,td,
   <details class="recurring-details" id="recurringDetails">
     <summary>
       <div>
-        <strong>Spese mensili e programmate</strong>
-        <span>Inserisci una spesa ripetuta, scegli esattamente i mesi e vedi quante volte verrà conteggiata.</span>
+        <strong>Spese mensili e programmate <em class="rule-count" id="ruleCountBadge">0</em></strong>
+        <span>Spese che si ripetono: scegli i mesi, l'anno o le rate e vengono inserite da sole nei movimenti.</span>
       </div>
       <span class="summary-arrow">⌄</span>
     </summary>
 
     <div class="recurring-body">
-      <div class="recurring-form">
-        <input id="ruleDesc" class="field" placeholder="Descrizione spesa">
-        <div class="category-create-wrap">
-  <input id="ruleCategory" class="field" list="expenseCategories" placeholder="Categoria (es. Casa)">
-  <button class="category-add-btn" type="button" title="Crea nuova categoria uscita" onclick="createCategory('out','ruleCategory')">+</button>
-</div>
-        <input id="ruleAmount" class="field" type="number" min="0" step="0.01" placeholder="Importo">
-        <select id="ruleType" onchange="updateRuleFields()">
-          <option value="recurring">Mesi scelti</option>
-          <option value="annual">Annuale</option>
-          <option value="installment">A rate</option>
-        </select>
-        <select id="ruleYear"></select>
-      </div>
+      <div class="rule-new">
+        <h4 class="rule-new-title">Nuova spesa programmata</h4>
 
-      <div id="recurringMonthsBlock">
-        <div class="months-pick-head">
-          <span>Quali mesi?</span>
-          <b id="selectedMonthsCount">0 mesi selezionati</b>
+        <div class="rf-grid">
+          <label class="add-field"><span>1 · Categoria</span>
+            <select id="ruleCategory" class="field cat-select" data-type="out" onchange="categoryPicked('out',this)"></select>
+          </label>
+          <label class="add-field rf-wide"><span>2 · Che spesa è?</span>
+            <input id="ruleDesc" class="field" placeholder="es. Affitto, Assicurazione auto" autocomplete="off">
+          </label>
+          <label class="add-field"><span>3 · Importo</span>
+            <input id="ruleAmount" class="field amount-field" type="number" min="0" step="0.01" placeholder="0,00">
+          </label>
         </div>
-        <div class="months-check-grid" id="ruleMonthsGrid"></div>
-      </div>
 
-      <div id="annualBlock" style="display:none;">
-        <div class="compact-row">
-          <span class="mini-label">Mese annuale</span>
-          <select id="ruleAnnualMonth"></select>
+        <div class="rf-when">
+          <span class="rf-label">4 · Quando si ripete?</span>
+          <select id="ruleType" onchange="updateRuleFields()" style="display:none">
+            <option value="recurring">Mesi scelti</option>
+            <option value="annual">Annuale</option>
+            <option value="installment">A rate</option>
+          </select>
+          <div class="seg" id="ruleTypeSeg">
+            <button type="button" data-v="recurring" class="on" onclick="setRuleType('recurring')">Nei mesi che scelgo</button>
+            <button type="button" data-v="annual" onclick="setRuleType('annual')">Una volta l'anno</button>
+            <button type="button" data-v="installment" onclick="setRuleType('installment')">A rate</button>
+          </div>
+          <label class="add-field rf-year"><span>Anno</span><select id="ruleYear"></select></label>
+        </div>
+
+        <div id="recurringMonthsBlock">
+          <div class="months-pick-head">
+            <span>Quali mesi?
+              <button type="button" class="link-btn" onclick="setAllRuleMonths(true)">Tutti</button>
+              <button type="button" class="link-btn" onclick="setAllRuleMonths(false)">Nessuno</button>
+            </span>
+            <b id="selectedMonthsCount">0 mesi selezionati</b>
+          </div>
+          <div class="months-check-grid" id="ruleMonthsGrid"></div>
+        </div>
+
+        <div id="annualBlock" style="display:none;">
+          <div class="compact-row">
+            <span class="mini-label" style="margin:0">In quale mese?</span>
+            <select id="ruleAnnualMonth"></select>
+          </div>
+        </div>
+
+        <div id="installmentBlock" style="display:none;">
+          <div class="installment-grid">
+            <div><span class="mini-label">Mese iniziale</span><select id="ruleStartMonth"></select></div>
+            <div><span class="mini-label">Numero rate</span><input id="ruleInstallments" class="field" type="number" min="2" max="60" step="1" placeholder="N. rate"></div>
+            <div><span class="mini-label">Durata totale (mesi)</span><input id="ruleDuration" class="field" type="number" min="2" max="60" step="1" placeholder="Mesi"></div>
+          </div>
+        </div>
+
+        <div class="rule-create-row">
+          <div class="note-box" id="ruleHelp">Scegli i mesi: l'importo verrà inserito automaticamente solo nei mesi selezionati dell'anno indicato.</div>
+          <button class="btn primary" onclick="addRule()">+ Aggiungi spesa programmata</button>
         </div>
       </div>
 
-      <div id="installmentBlock" style="display:none;">
-        <div class="installment-grid">
-          <div><span class="mini-label">Mese iniziale</span><select id="ruleStartMonth"></select></div>
-          <div><span class="mini-label">Numero rate</span><input id="ruleInstallments" class="field" type="number" min="2" max="60" step="1" placeholder="N. rate"></div>
-          <div><span class="mini-label">Durata totale</span><input id="ruleDuration" class="field" type="number" min="2" max="60" step="1" placeholder="Mesi"></div>
-        </div>
-      </div>
-
-      <div class="rule-create-row">
-        <div class="note-box" id="ruleHelp">Scegli i mesi: l'importo verrà inserito automaticamente solo nei mesi selezionati dell'anno indicato.</div>
-        <button class="btn primary" onclick="addRule()">+ Aggiungi spesa programmata</button>
-      </div>
-
-      <table class="rules-table">
-        <thead>
-          <tr>
-            <th>Spesa / categoria</th>
-            <th>Tipo</th>
-            <th>Periodo</th>
-            <th style="text-align:right">Importo</th>
-            <th style="text-align:right">Dettaglio</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="rulesBody"></tbody>
-      </table>
+      <h4 class="rule-list-title">Spese programmate attive</h4>
+      <div id="rulesList" class="rules-list"></div>
     </div>
   </details>
 
@@ -2771,47 +2902,12 @@ const seed={
   selectedYear:2026,
   selectedMonth:null,
   activeScreen:"summary",
-  movements:[
-    {id:1,year:2026,month:0,type:"in",desc:"Stipendio Netto Metka",category:"Stipendio",amount:2100},
-    {id:2,year:2026,month:0,type:"in",desc:"La SIA 1° Piano quotato",category:"Professione",amount:300},
-    {id:3,year:2026,month:0,type:"in",desc:"Ape Polito",category:"Professione",amount:70},
-    {id:4,year:2026,month:0,type:"in",desc:"Zappari Daniel",category:"Professione",amount:600},
-    {id:5,year:2026,month:0,type:"out",desc:"Affitto",category:"Casa",amount:550},
-    {id:6,year:2026,month:0,type:"out",desc:"Tasse e Cassa",category:"Tasse",amount:625},
-    {id:7,year:2026,month:0,type:"out",desc:"Macchina",category:"Auto",amount:640},
-    {id:8,year:2026,month:0,type:"out",desc:"Spese varie",category:"Altro",amount:1800},
-    {id:9,year:2026,month:1,type:"in",desc:"Stipendio Netto Metka",category:"Stipendio",amount:2100},
-    {id:10,year:2026,month:1,type:"out",desc:"Affitto",category:"Casa",amount:550},
-    {id:11,year:2026,month:1,type:"out",desc:"Ruote Mini",category:"Auto",amount:550}
-  ],
+  movements:[],
   incomeCategories:["Stipendio","Professione","Rimborsi","Investimenti","Altro"],
   expenseCategories:["Casa","Auto","Tasse","Lavoro","Vacanze","Acquisti","Salute","Tempo libero","Altro"],
   rules:[],
-  liquidity:[
-    {id:101,type:"in",desc:"Revolut",amount:1200},
-    {id:102,type:"in",desc:"Conto dep. Revolut",amount:2300},
-    {id:103,type:"in",desc:"Revolut Pro",amount:60},
-    {id:104,type:"in",desc:"Trade Republic",amount:4900},
-    {id:105,type:"in",desc:"Contanti",amount:600},
-    {id:106,type:"in",desc:"PayPal",amount:10},
-    {id:107,type:"in",desc:"Poste",amount:200},
-    {id:108,type:"in",desc:"Stipendio Giugno Metka",amount:3000},
-    {id:109,type:"in",desc:"Stipendio Luglio Metka",amount:3000},
-    {id:110,type:"in",desc:"Caparra casa",amount:1100},
-    {id:201,type:"out",desc:"Tasse",amount:2600},
-    {id:202,type:"out",desc:"Affitto 4 mesi",amount:2200},
-    {id:203,type:"out",desc:"Rata cassa Geom.",amount:1400},
-    {id:204,type:"out",desc:"Assicurazione Auto",amount:600},
-    {id:205,type:"out",desc:"Bollo auto",amount:300},
-    {id:206,type:"out",desc:"Klarna",amount:500},
-    {id:207,type:"out",desc:"PayPal",amount:720},
-    {id:208,type:"out",desc:"Affitto 4 mesi",amount:2200},
-    {id:209,type:"out",desc:"Assicurazione Professionale",amount:500}
-  ],
-  investments:[
-    {id:301,name:"Trade Republic",capital:4900,rate:2,tax:26,note:"Non superare i 5K"},
-    {id:302,name:"Revolut",capital:2950,rate:2,tax:26,note:"Non superare i 5K"}
-  ]
+  liquidity:[],
+  investments:[]
 };
 
 let state=loadAndMigrate();
@@ -2875,35 +2971,62 @@ function inferCategory(desc,type){
 }
 
 
-function renderCategoryOptions(){
-  const inList=document.getElementById("incomeCategories");
-  const outList=document.getElementById("expenseCategories");
-  if(inList) inList.innerHTML=(state.incomeCategories||[]).map(x=>`<option value="${esc(x)}"></option>`).join("");
-  if(outList) outList.innerHTML=(state.expenseCategories||[]).map(x=>`<option value="${esc(x)}"></option>`).join("");
+function catOptions(type,current,placeholder){
+  const key=type==="in"?"incomeCategories":"expenseCategories";
+  const list=[...(state[key]||[])];
+  if(current && !list.includes(current)) list.push(current);
+  return (placeholder?`<option value="">${esc(placeholder)}</option>`:"")+
+    list.map(x=>`<option value="${esc(x)}"${x===current?" selected":""}>${esc(x)}</option>`).join("")+
+    `<option value="__new__">＋ Nuova categoria…</option>`;
 }
-
-function createCategory(type,targetId=null){
+function fillCategorySelect(id,type,placeholder){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const prev=el.value&&el.value!=="__new__"?el.value:"";
+  el.innerHTML=catOptions(type,prev,placeholder);
+  el.value=prev;
+  el.dataset.prev=prev;
+}
+function renderCategoryOptions(){
+  fillCategorySelect("focusInCategory","in","Scegli categoria…");
+  fillCategorySelect("focusOutCategory","out","Scegli categoria…");
+  fillCategorySelect("ruleCategory","out","Scegli categoria…");
+}
+function promptNewCategory(type){
   const label=type==="in"?"entrata":"uscita";
   const name=prompt(`Nome nuova categoria ${label}:`);
-  if(name===null) return;
-
+  if(name===null) return null;
   const clean=String(name).trim();
-  if(!clean) return;
-
+  if(!clean) return null;
   const key=type==="in"?"incomeCategories":"expenseCategories";
-  const exists=(state[key]||[]).some(x=>x.toLowerCase()===clean.toLowerCase());
-
-  if(!exists){
-    state[key].push(clean);
-    save();
+  const found=(state[key]||[]).find(x=>x.toLowerCase()===clean.toLowerCase());
+  if(found) return found;
+  state[key].push(clean);
+  save();
+  return clean;
+}
+function categoryPicked(type,el){
+  if(el.value==="__new__"){
+    const name=promptNewCategory(type);
     renderCategoryOptions();
+    el.value=name||el.dataset.prev||"";
   }
-
-  const target=targetId
-    ? document.getElementById(targetId)
-    : document.getElementById(type==="in"?"focusInCategory":"focusOutCategory");
-
-  if(target) target.value=clean;
+  el.dataset.prev=el.value;
+  el.classList.remove("invalid");
+}
+function rowCategory(el,type,kind,id){
+  let v=el.value;
+  if(v==="__new__"){
+    v=promptNewCategory(type);
+    if(!v){el.value=el.dataset.prev||"";return}
+  }
+  if(kind==="rule") updateRule(id,"category",v); else updateMovement(id,"category",v);
+}
+function createCategory(type,targetId=null){
+  const name=promptNewCategory(type);
+  renderCategoryOptions();
+  const target=document.getElementById(targetId||(type==="in"?"focusInCategory":"focusOutCategory"));
+  if(target&&name){target.value=name;target.dataset.prev=name}
 }
 
 function polar(cx,cy,r,angle){const rad=(angle-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
@@ -3106,6 +3229,7 @@ function setCenter(kicker,value,sub){
 }
 
 function renderMonths(){renderMonthSelector();renderFocusedMonth()}
+function isCurrentMonth(month,year){const n=new Date();return month===n.getMonth()&&(year===undefined||year===n.getFullYear())}
 function renderMonthSelector(){
   const grid=document.getElementById("monthSelectorGrid");
   grid.innerHTML=MONTHS.map((name,month)=>{
@@ -3113,9 +3237,10 @@ function renderMonthSelector(){
     const inc=items.filter(x=>x.type==="in").reduce((a,b)=>a+b.amount,0);
     const out=items.filter(x=>x.type==="out").reduce((a,b)=>a+b.amount,0);
     const bal=inc-out,cls=bal>0?"pos":bal<0?"neg":"zero";
-    return `<button class="month-select-card ${state.selectedMonth===month?"active":""}" onclick="selectMovementMonth(${month})">
+    const cur=isCurrentMonth(month,state.selectedYear);
+    return `<button class="month-select-card ${state.selectedMonth===month?"active":""} ${cur?"current":""}" onclick="selectMovementMonth(${month})"${cur?' aria-current="date"':""}>
       <span class="m-topline">
-        <span class="m-name">${name}</span>
+        <span class="m-name">${name}${cur?'<i class="cur-tag">● ORA</i>':""}</span>
         <span class="m-balance ${cls}">${bal>0?"+ ":""}${euro(bal)}</span>
       </span>
       <span class="m-flow">
@@ -3133,7 +3258,7 @@ function renderFocusedMonth(){
   const month=Number(state.selectedMonth),items=allItemsForMonth(state.selectedYear,month);
   const incomes=items.filter(x=>x.type==="in"),expenses=items.filter(x=>x.type==="out");
   const inc=incomes.reduce((a,b)=>a+b.amount,0),out=expenses.reduce((a,b)=>a+b.amount,0),bal=inc-out;
-  document.getElementById("focusedMonthTitle").textContent=`${MONTHS[month]} ${state.selectedYear}`;
+  document.getElementById("focusedMonthTitle").innerHTML=`${MONTHS[month]} ${state.selectedYear}`+(isCurrentMonth(month,state.selectedYear)?' <i class="cur-tag big">● mese corrente</i>':"");
   const balEl=document.getElementById("focusedMonthBalance");balEl.textContent=(bal>0?"+ ":"")+euro(bal);balEl.className=bal>0?"pos":bal<0?"neg":"zero";
   document.getElementById("focusedIncomeTotal").textContent=euro(inc);document.getElementById("focusedExpenseTotal").textContent=euro(out);
   document.getElementById("focusedIncomeList").innerHTML=renderFocusedList(incomes,"in");
@@ -3148,7 +3273,7 @@ function renderFocusedList(items,type){
     const i=manual.findIndex(z=>z.id===x.id);
     return `<div class="editable-row with-category">
       <input class="inline-edit" value="${esc(x.desc)}" onchange="updateMovement(${x.id},'desc',this.value)">
-      <input class="inline-edit category" value="${esc(x.category||"Altro")}" list="${type==="in"?"incomeCategories":"expenseCategories"}" onchange="updateMovement(${x.id},'category',this.value)">
+      <select class="inline-edit category cat-chip" data-prev="${esc(x.category||"Altro")}" onchange="rowCategory(this,'${type}','mov',${x.id})">${catOptions(type,x.category||"Altro")}</select>
       <input class="inline-edit money" type="number" min="0" step="0.01" value="${Number(x.amount)}" onchange="updateMovement(${x.id},'amount',this.value)">
       <div class="row-actions"><button class="order-btn" ${i>0?"":"disabled"} onclick="moveMovement(${x.id},-1)">↑</button><button class="order-btn" ${i<manual.length-1?"":"disabled"} onclick="moveMovement(${x.id},1)">↓</button><button class="order-btn delete-mini" onclick="deleteMovement(${x.id})">×</button></div>
     </div>`;
@@ -3159,10 +3284,12 @@ function addFocusedMovement(type){
   const descEl=document.getElementById(type==="in"?"focusInDesc":"focusOutDesc");
   const catEl=document.getElementById(type==="in"?"focusInCategory":"focusOutCategory");
   const amountEl=document.getElementById(type==="in"?"focusInAmount":"focusOutAmount");
-  const desc=descEl.value.trim(),category=catEl.value.trim()||inferCategory(desc,type),amount=parseFloat(amountEl.value);
-  if(!desc||!(amount>0))return;
+  const desc=descEl.value.trim(),category=(catEl.value||"").trim(),amount=parseFloat(amountEl.value);
+  if(!category||category==="__new__"){catEl.classList.add("invalid");catEl.focus();return}
+  if(!desc){descEl.classList.add("invalid");descEl.focus();descEl.oninput=()=>descEl.classList.remove("invalid");return}
+  if(!(amount>0)){amountEl.classList.add("invalid");amountEl.focus();amountEl.oninput=()=>amountEl.classList.remove("invalid");return}
   state.movements.push({id:uid(),year:state.selectedYear,month:Number(state.selectedMonth),type,desc,category,amount});
-  descEl.value="";catEl.value="";amountEl.value="";save();renderConnected();
+  descEl.value="";amountEl.value="";save();renderConnected();descEl.focus();
 }
 function updateMovement(id,field,value){
   const x=state.movements.find(m=>m.id===id);if(!x)return;
@@ -3192,6 +3319,15 @@ function renderMovementDonut(data){
 }
 function setMovementDonutCenter(data){document.getElementById("movementDonutLabel").textContent=MONTHS[data.month];document.getElementById("movementDonutValue").textContent=(data.balance>0?"+ ":"")+euro(data.balance);document.getElementById("movementDonutSub").textContent="saldo del mese"}
 
+function setRuleType(v){
+  document.getElementById("ruleType").value=v;
+  document.querySelectorAll("#ruleTypeSeg button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  updateRuleFields();
+}
+function setAllRuleMonths(on){
+  document.querySelectorAll("#ruleMonthsGrid input").forEach(x=>x.checked=on);
+  updateSelectedMonthsCount();
+}
 function updateRuleFields(){
   const t=document.getElementById("ruleType").value;
   document.getElementById("recurringMonthsBlock").style.display=t==="recurring"?"block":"none";
@@ -3203,8 +3339,11 @@ function updateRuleFields(){
     :"Inserisci costo totale, numero di rate e durata complessiva: le rate verranno distribuite nel periodo.";
 }
 function addRule(){
-  const desc=document.getElementById("ruleDesc").value.trim(),category=document.getElementById("ruleCategory").value.trim()||"Altro",amount=parseFloat(document.getElementById("ruleAmount").value),type=document.getElementById("ruleType").value,year=parseInt(document.getElementById("ruleYear").value);
-  if(!desc||!(amount>0))return;
+  const desc=document.getElementById("ruleDesc").value.trim(),category=document.getElementById("ruleCategory").value.trim(),amount=parseFloat(document.getElementById("ruleAmount").value),type=document.getElementById("ruleType").value,year=parseInt(document.getElementById("ruleYear").value);
+  const bad=(id)=>{const el=document.getElementById(id);el.classList.add("invalid");el.focus();el.oninput=el.onchange=()=>el.classList.remove("invalid")};
+  if(!category||category==="__new__")return bad("ruleCategory");
+  if(!desc)return bad("ruleDesc");
+  if(!(amount>0))return bad("ruleAmount");
   const base={id:uid(),desc,category,amount,type};
   if(type==="recurring"){
     const months=[...document.querySelectorAll('#ruleMonthsGrid input:checked')].map(x=>parseInt(x.value));
@@ -3216,19 +3355,42 @@ function addRule(){
     base.startYear=year;base.startMonth=parseInt(document.getElementById("ruleStartMonth").value);base.installments=n;base.durationMonths=duration;
   }
   state.rules.push(base);save();
-  document.getElementById("ruleDesc").value="";document.getElementById("ruleCategory").value="";document.getElementById("ruleAmount").value="";
+  document.getElementById("ruleDesc").value="";document.getElementById("ruleAmount").value="";
   document.querySelectorAll('#ruleMonthsGrid input').forEach(x=>x.checked=false);document.getElementById("ruleInstallments").value="";document.getElementById("ruleDuration").value="";updateSelectedMonthsCount();renderConnected();renderRules();
 }
 function renderRules(){
-  const body=document.getElementById("rulesBody");if(!body)return;
-  if(!state.rules.length){body.innerHTML='<tr><td colspan="6" style="color:#666">Nessuna spesa programmata.</td></tr>';return}
-  body.innerHTML=state.rules.map((r,i)=>{
-    let period="",detail="",label="";
-    if(r.type==="recurring"){label="Mesi scelti";period=`${r.year}`;detail=(r.months||[]).map(m=>MONTHS[m].slice(0,3)).join(", ")}
-    else if(r.type==="annual"){label="Annuale";period=`da ${r.startYear}`;detail=MONTHS[r.startMonth]}
-    else if(r.type==="installment"){label="A rate";period=`da ${MONTHS[r.startMonth]} ${r.startYear}`;detail=`${r.installments} rate / ${r.durationMonths||r.installments} mesi · ${euro(r.amount/r.installments)} cad.`}
-    else{label="Mensile";period=`da ${MONTHS[r.startMonth]} ${r.startYear}`;detail="ogni mese"}
-    return`<tr><td><input class="editable-table-input" value="${esc(r.desc)}" onchange="updateRule(${r.id},'desc',this.value)"><input class="editable-table-input category" list="expenseCategories" value="${esc(r.category||"Altro")}" onchange="updateRule(${r.id},'category',this.value)"></td><td>${label}</td><td>${period}</td><td class="num"><input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(r.amount)}" onchange="updateRule(${r.id},'amount',this.value)"></td><td class="num">${detail}</td><td><div class="table-actions"><button class="order-btn" ${i===0?"disabled":""} onclick="moveRule(${r.id},-1)">↑</button><button class="order-btn" ${i===state.rules.length-1?"disabled":""} onclick="moveRule(${r.id},1)">↓</button><button class="order-btn delete-mini" onclick="deleteRule(${r.id})">×</button></div></td></tr>`;
+  const box=document.getElementById("rulesList");if(!box)return;
+  const badge=document.getElementById("ruleCountBadge");if(badge)badge.textContent=state.rules.length;
+  if(!state.rules.length){box.innerHTML='<div class="rules-empty"><b>Nessuna spesa programmata</b><span>Compila il modulo qui sopra: la spesa comparirà da sola nei mesi indicati.</span></div>';return}
+  box.innerHTML=state.rules.map((r,i)=>{
+    let badgeTxt="",when="",extra="",chips="";
+    const mchip=(set)=>MONTHS.map((m,k)=>`<span class="mchip${set.includes(k)?" on":""}">${m.slice(0,3)}</span>`).join("");
+    if(r.type==="recurring"){
+      badgeTxt="Mesi scelti";when=`Anno ${r.year}`;chips=mchip(r.months||[]);
+      extra=`${(r.months||[]).length} × ${euro(r.amount)} = <b>${euro(r.amount*(r.months||[]).length)}</b> nell'anno`;
+    }else if(r.type==="annual"){
+      badgeTxt="Annuale";when=`Ogni ${MONTHS[r.startMonth]} · da ${r.startYear}`;chips=mchip([r.startMonth]);
+      extra=`<b>${euro(r.amount)}</b> una volta l'anno`;
+    }else if(r.type==="installment"){
+      badgeTxt="A rate";when=`Da ${MONTHS[r.startMonth]} ${r.startYear}`;
+      extra=`${r.installments} rate in ${r.durationMonths||r.installments} mesi · <b>${euro(r.amount/r.installments)}</b> a rata (totale ${euro(r.amount)})`;
+    }else{
+      badgeTxt="Ogni mese";when=`Da ${MONTHS[r.startMonth]} ${r.startYear}`;extra=`<b>${euro(r.amount)}</b> ogni mese`;
+    }
+    return `<div class="rule-card">
+      <div class="rule-top">
+        <span class="rule-badge t-${esc(r.type)}">${badgeTxt}</span>
+        <span class="rule-when">${when}</span>
+        <div class="table-actions"><button class="order-btn" ${i===0?"disabled":""} onclick="moveRule(${r.id},-1)" title="Su">↑</button><button class="order-btn" ${i===state.rules.length-1?"disabled":""} onclick="moveRule(${r.id},1)" title="Giù">↓</button><button class="order-btn delete-mini" onclick="deleteRule(${r.id})" title="Elimina">×</button></div>
+      </div>
+      <div class="rule-main">
+        <input class="editable-table-input rule-desc" value="${esc(r.desc)}" onchange="updateRule(${r.id},'desc',this.value)" aria-label="Descrizione">
+        <select class="editable-table-input cat-chip" data-prev="${esc(r.category||"Altro")}" onchange="rowCategory(this,'out','rule',${r.id})" aria-label="Categoria">${catOptions("out",r.category||"Altro")}</select>
+        <input class="editable-table-input amount" type="number" min="0" step=".01" value="${Number(r.amount)}" onchange="updateRule(${r.id},'amount',this.value)" aria-label="Importo">
+      </div>
+      ${chips?`<div class="rule-chips">${chips}</div>`:""}
+      <div class="rule-extra">${extra}</div>
+    </div>`;
   }).join("");
 }
 function updateRule(id,field,value){const r=state.rules.find(x=>x.id===id);if(!r)return;if(field==="amount"){const n=parseFloat(value);if(!(n>=0))return;r.amount=n}else{const t=String(value).trim();if(!t)return;r[field]=t}save();renderConnected()}
@@ -3257,7 +3419,7 @@ function toggleCategory(id){document.getElementById(id)?.classList.toggle("open"
 function renderLiquidity(){
   document.getElementById("liqYearLabel").textContent=state.selectedYear;
   document.getElementById("liqAllYearBtn").classList.toggle("active",state.selectedMonth===null);
-  document.getElementById("liqMonthFilters").innerHTML=MONTHS.map((m,i)=>`<button class="period-btn ${state.selectedMonth===i?"active":""}" onclick="selectLiquidityPeriod(${i})">${m.slice(0,3)}</button>`).join("");
+  document.getElementById("liqMonthFilters").innerHTML=MONTHS.map((m,i)=>`<button class="period-btn ${state.selectedMonth===i?"active":""} ${isCurrentMonth(i,state.selectedYear)?"current":""}" onclick="selectLiquidityPeriod(${i})">${m.slice(0,3)}</button>`).join("");
   const items=getPeriodItems(state.selectedYear,state.selectedMonth);
   const income=items.filter(x=>x.type==="in").reduce((a,b)=>a+b.amount,0),expense=items.filter(x=>x.type==="out").reduce((a,b)=>a+b.amount,0),net=income-expense;
   const period=state.selectedMonth===null?`Anno ${state.selectedYear}`:`${MONTHS[state.selectedMonth]} ${state.selectedYear}`;
@@ -3934,7 +4096,7 @@ setupMobileApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js?v=11").then(reg=>reg.update()).catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js?v=13").then(reg=>reg.update()).catch(()=>{});
   });
 }
 
